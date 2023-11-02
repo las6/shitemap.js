@@ -58,21 +58,20 @@ export const Flow = (props) => {
 	return (
 		<div className="layoutflow">
 			<div className="controls">
-				<button onClick={() => onLayout('TB')}>vertical layout</button>
-				<button onClick={() => onLayout('LR')}>horizontal layout</button>
+				<button onClick={() => onLayout('TB')}>Top-down layout</button>
+				<button onClick={() => onLayout('LR')}>Left-to-Right layout</button>
 			</div>
 			<ReactFlow
-				isInteractive={false}
 				nodes={nodes}
 				edges={edges}
 				onNodesChange={onNodesChange}
 				onEdgesChange={onEdgesChange}
 				nodesConnectable={false}
-				nodesDraggable={false}
+				nodesDraggable={true}
 				onConnect={onConnect}
 				onEdgeUpdate={onEdgeUpdate}
 				connectionLineType={ConnectionLineType.SmoothStep}
-				proOptions={{ hideAttribution: true }}
+				proOptions={{ hideAttribution: false }}
 				snapToGrid
 				fitView
 			>

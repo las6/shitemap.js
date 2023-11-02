@@ -191,7 +191,7 @@ export const makeNodesAndEdges = (sitemap) => {
 };
 */
 
-export const getLayoutedElements = (nodes, edges, direction = 'LR') => {
+export const getLayoutedElements = (nodes, edges, direction = 'TB') => {
 	const dagreGraph = new dagre.graphlib.Graph();
 	dagreGraph.setDefaultEdgeLabel(() => ({}));
 

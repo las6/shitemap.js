@@ -30,3 +30,36 @@ a {
   width: 100vw;
   height: 100vh;
 }
+
+.controls {
+  display: flex;
+  margin: 5px;
+  position: absolute;  
+  box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.08);
+  z-index: 1111;
+}
+
+.controls button {
+  border: none;
+  background: #fefefe;
+  border: 1px solid #eee;
+  box-sizing: content-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* width: 16px; */
+  /* height: 16px; */
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  padding: 5px;
+}
+.controls button:hover {
+  background-color: #f4f4f4;
+}
+
+.react-flow__node-default {
+  word-wrap: break-word;
+  /* width: 20em !important; */
+}
