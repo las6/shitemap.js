@@ -1,41 +1,38 @@
-// 'use client';
-import { Flow } from './Flow';
-import { makeInitialData, getLayoutedElements } from '../components/helpers'
-import { sitemap } from '../pages/api/sitemapper';
+"use client";
 
-// app/page.js
-// This file maps to the index route (/)
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-async function getData() {
-	// const res = await fetch(`${process.env.URL}/api/sitemapper`);
-	// const res = await fetch(`${process.env.URL}/api/sitemapper`);
-	const res2 = sitemap();
-	// The return value is *not* serialized
-	// You can return Date, Map, Set, etc.
-	return res2;
-}
+const base64UrlEncode = (str) => {
+	return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+};
 
+const HomePage = () => {
+	const [url, setUrl] = useState("https://www.cricketlighters.com/sitemap.xml");
+	const router = useRouter();
 
-const Page = async () => {
-	const shitemap = await getData();
-	const initialData = makeInitialData(shitemap);
-	const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-		initialData.initialNodes,
-		initialData.initialEdges
+	const handleSubmit = (e) => {
+		e.preventDefault();
+		const encodedUrl = base64UrlEncode(url); // Encode the URL using URL-safe base64
+		router.push(`/view/${encodedUrl}`);
+	};
+
+	return (
+		<div>
+			<h1>Enter Sitemap URL</h1>
+			<form onSubmit={handleSubmit}>
+				<input
+					type="text"
+					value={url}
+					onChange={(e) => setUrl(e.target.value)}
+					placeholder="Enter sitemap URL"
+					autoComplete='domain'
+					required
+				/>
+				<button type="submit">Submit</button>
+			</form>
+		</div>
 	);
+};
 
-	// console.log('nodes', layoutedNodes);
-	// console.log('layoutedEdges', layoutedEdges);
-
-	// return <div>test</div>;
-	return <Flow data={{ layoutedNodes, layoutedEdges }} />;
-}
-
-
-// function asyncComponent(fn) {
-// 	return fn;
-// }
-
-// const Page = asyncComponent(_Page);
-
-export default Page;
+export default HomePage;

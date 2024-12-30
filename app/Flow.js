@@ -74,6 +74,8 @@ export const Flow = (props) => {
 				proOptions={{ hideAttribution: false }}
 				snapToGrid
 				fitView
+				maxZoom={2}
+				minZoom={0.01}
 			>
 				<MiniMap />
 				<Controls />

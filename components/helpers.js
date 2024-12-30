@@ -65,14 +65,25 @@ export const makeTree = function (sitemap) {
 						id: `en${cyrb53(`edgenode-${edgeNode}`)}`,
 						data: { label: path },
 						style: {
-							background: 'salmon',
-							color: 'white',
+							background: "salmon",
+							color: "white",
 						},
 						position: {
 							x: 0,
 							y: 0,
 						},
 					},
+				};
+			}
+
+			// Increment the subpages counter
+			workingObj[path].subpages += 1;
+
+			// Check if subpages exceed 10 and apply different style
+			if (workingObj[path].subpages > 4) {
+				node.style = {
+					background: "teal", // Red background
+					color: "#000",
 				};
 			}
 			//update the working object reference

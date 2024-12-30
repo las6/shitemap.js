@@ -2,7 +2,5 @@
 	"workbench.colorCustomizations": {
 		"focusBorder": "#ff000000",
 		"activityBar.background": "#123423",
-		"titleBar.activeBackground": "#194831",
-		"titleBar.activeForeground": "#F5FCF9"
 	}
 }
