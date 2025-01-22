@@ -41,11 +41,16 @@
 }
 
 .title {
-  color:#2222;
+  /* color:#2222; */
   position: absolute;
   margin: 0;
   line-height: 1.15;
-  font-size: 4rem;
+  font-size: 6rem;
+
+  background: -webkit-linear-gradient(#ddd4, #4444);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0.6;
 }
 
 .title,

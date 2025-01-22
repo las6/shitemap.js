@@ -31,17 +31,18 @@ export const makeTree = function (sitemap) {
 	var edgeNode = 0;
 
 	sitemap.sites.forEach((item, i) => {
+		const label = item.replace(siteBasePath, "");
 		const node = {
 			id: `n${cyrb53(item)}`,
 			url: item,
-			data: { label: item.replace(siteBasePath, "") },
+			data: { label: label == "/" ? "Home" : label },
 			position: {
 				x: 0,
 				y: 0,
 			}
 		};
 
-		if (item == "/") {
+		if (label == "/") {
 			node.style = {
 				backgroundColor: '#000',
 				color: 'white'
