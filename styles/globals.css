@@ -44,6 +44,29 @@ a {
 }
 
 
+.front-page {
+  /* margin-top: 6rem; */
+}
+form {
+  display: flex;
+  gap: 3px;
+  width: 100%; 
+}
+
+form input {
+  padding: 5px;
+  font-family: Courier;
+  font-weight: 600;
+  min-width: 28em;
+}
+form > * {
+  flex: 1 1 auto;
+}
+form button {
+  font-weight: 600;
+}
+
+
 .layoutflow {
   width: 100vw;
   height: 100vh;

@@ -31,18 +31,18 @@ export const makeTree = function (sitemap) {
 	var edgeNode = 0;
 
 	sitemap.sites.forEach((item, i) => {
-		const label = item.replace(siteBasePath, "");
+		const label = item.replace(siteBasePath, "").replace(/\/$/, "");
 		const node = {
 			id: `n${cyrb53(item)}`,
 			url: item,
-			data: { label: label == "/" ? "Home" : label },
+			data: { label: label == "" ? "Home" : label, subpages: 0 },
 			position: {
 				x: 0,
 				y: 0,
-			}
+			},
 		};
 
-		if (label == "/") {
+		if (label == "") {
 			node.style = {
 				backgroundColor: '#000',
 				color: 'white'
@@ -61,14 +61,11 @@ export const makeTree = function (sitemap) {
 			//create the nested object if it doesn't exist
 			if (!workingObj[path]) {
 				edgeNode += 1;
+				console.log('DO WE EVER GET HERE?');
 				workingObj[path] = {
 					__self: {
 						id: `en${cyrb53(`edgenode-${edgeNode}`)}`,
-						data: { label: path },
-						style: {
-							background: "salmon",
-							color: "white",
-						},
+						data: { label: path, subpages: 0 },
 						position: {
 							x: 0,
 							y: 0,
@@ -78,14 +75,15 @@ export const makeTree = function (sitemap) {
 			}
 
 			// Increment the subpages counter
-			workingObj[path].subpages += 1;
+			// workingObj[path].__self.data.subpages += 1;
+			// console.log(path);
 
 			// Check if subpages exceed 10 and apply different style
-			if (workingObj[path].subpages > 4) {
-				node.style = {
-					background: "teal", // Red background
-					color: "#000",
-				};
+			if (workingObj[path].__self.data.subpages > 4) {
+				// node.style = {
+				// 	background: "teal", // Red background
+				// 	color: "#000",
+				// };
 			}
 			//update the working object reference
 			workingObj = workingObj[path];
@@ -203,7 +201,7 @@ export const makeNodesAndEdges = (sitemap) => {
 };
 */
 
-export const getLayoutedElements = (nodes, edges, direction = 'TB') => {
+export const getLayoutedElements = (nodes, edges, direction) => {
 	const dagreGraph = new dagre.graphlib.Graph();
 	dagreGraph.setDefaultEdgeLabel(() => ({}));
 

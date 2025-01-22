@@ -25,38 +25,45 @@ export const Flow = ({data, site}) => {
 		data.layoutedEdges
 	);
 	const [selectedNode, setSelectedNode] = useState(null);
-	const [direction, setDirection] = useState('LR');
+	const [direction, setDirection] = useState(site.layout ?? 'LR');
 	const [open, setOpen] = useState(false);
+	const [hiddenNodes, setHiddenNodes] = useState([]);
 	const baseUrl = site.url;
 	const reactFlowInstance = useReactFlow();
+
+	const handleHashChange = () => {
+		const hash = window.location.hash.substring(1);
+		if (hash) {
+			const node = nodes.find((n) => n.id === hash);
+			if (node) {
+				reactFlowInstance.fitView({ nodes: [node], padding: 0.3, maxZoom: 1.25 });
+				setSelectedNode(node);
+				setOpen(true);
+			} else {
+				console.log('no node?')
+			}
+		}
+	};
 
 	useEffect(() => {
 		setNodes(data.layoutedNodes);
 		setEdges(data.layoutedEdges);
+		handleHashChange();
 	}, [data]);
-
-	useEffect(() => {
-		const handleHashChange = () => {
-			const hash = window.location.hash.substring(1);
-			if (hash) {
-				const node = nodes.find(n => n.id === hash);
-				if (node) {
-					const { x, y } = node.position;
-					// reactFlowInstance.zoomTo(12.5, { x, y });
-					reactFlowInstance.fitView({ nodes: [node], padding: 0.33, maxZoom: 1 });
-					setSelectedNode(node);
-					setOpen(true);
-				}
-			}
-		};
+	
+	useEffect(() => {		
 
 		window.addEventListener('hashchange', handleHashChange);
-		handleHashChange(); // Trigger on initial load
+		// handleHashChange(); // Trigger on initial load
 
 		return () => {
 			window.removeEventListener('hashchange', handleHashChange);
 		};
 	}, [nodes, reactFlowInstance]);
+	
+	useEffect(() => {
+		handleHashChange();
+	}, [data, reactFlowInstance]);
 
 	const onConnect = useCallback(
 		(params) =>
@@ -81,7 +88,6 @@ export const Flow = ({data, site}) => {
 	);
 
 	useEffect(() => {
-		console.log('direction', direction);
 		onLayout(direction);
 	}, [direction]);
 
@@ -94,37 +100,61 @@ export const Flow = ({data, site}) => {
 	const handleNodeClick = (event, node) => {
 		setSelectedNode(node);
 		setOpen(true);
-		// window.location.hash = node.id; // Update the URL with the node ID as a hash fragment
-		history.pushState(null, null, `#${node.id}`);
+		history.replaceState(null, null, `#${node.id}`);
 	};
 
 	const handleClose = () => {
 		setOpen(false);
 		setSelectedNode(null);
-		// window.location.hash = ''; // Clear the hash fragment from the URL
-		history.pushState(null, null, ``);
+		history.replaceState(null, null, ``);
 	};
 
-	// const handleZoomToNode = () => {
-	// 	if (selectedNode) {
-	// 		const node = nodes.find(n => n.id === selectedNode.id);
-	// 		if (node) {
-	// 			const { x, y } = node.position;
-	// 			reactFlowInstance.zoomTo(10, { x, y });
-	// 			reactFlowInstance.fitView({ nodes: [node], padding: 0.1 });
-	// 		}
-	// 	}
-	// };
+	const toggleChildrenVisibility = () => {
+		if (selectedNode) {
+			const toggleVisibility = (nodeId) => {
+				const children = edges.filter(edge => edge.source === nodeId).map(edge => edge.target);
+				setHiddenNodes(prevHiddenNodes => {
+					const newHiddenNodes = [...prevHiddenNodes];
+					children.forEach(childId => {
+						const index = newHiddenNodes.indexOf(childId);
+						if (index > -1) {
+							newHiddenNodes.splice(index, 1);
+						} else {
+							newHiddenNodes.push(childId);
+						}
+						toggleVisibility(childId); // Recursively toggle visibility for children
+					});
+					return newHiddenNodes;
+				});
+			};
+			toggleVisibility(selectedNode.id);
+			onLayout(direction); // Trigger relayout after toggling
+		}
+	};
+
+	const isNodeHidden = (nodeId) => {
+		if (hiddenNodes.includes(nodeId)) {
+			return true;
+		}
+		const parentEdge = edges.find(edge => edge.target === nodeId);
+		if (parentEdge) {
+			return isNodeHidden(parentEdge.source);
+		}
+		return false;
+	};
+
+	const filteredNodes = nodes.filter(node => !isNodeHidden(node.id));
+	const filteredEdges = edges.filter(edge => !isNodeHidden(edge.source) && !isNodeHidden(edge.target));
 
 	return (
 		<div className="layoutflow">
 			<div className="controls">
-				<button className={ direction == 'TB' ? 'active' : ''} onClick={() => setDirection("TB")}>Top-down layout</button>
-				<button className={direction == 'LR' ? 'active' : ''}  onClick={() => setDirection("LR")}>Left-to-Right layout</button>
+				<button className={ direction == 'TB' ? 'active' : ''} onClick={() => setDirection("TB")}>Top-down</button>
+				<button className={direction == 'LR' ? 'active' : ''}  onClick={() => setDirection("LR")}>Left-to-Right</button>
 			</div>
 			<ReactFlow
-				nodes={nodes}
-				edges={edges}
+				nodes={filteredNodes}
+				edges={filteredEdges}
 				onNodesChange={onNodesChange}
 				onEdgesChange={onEdgesChange}
 				nodesConnectable={false}
@@ -157,11 +187,12 @@ export const Flow = ({data, site}) => {
 								target="_blank"
 								rel="noopener noreferrer"
 							>
+								<span className="material-symbols-sharp">open_in_new</span>{' '}
 								{`${selectedNode.data.label}`}
-								<span className="material-symbols-sharp">open_in_new</span>
 							</a>
 						)}
-						{/* <button onClick={handleZoomToNode}>Zoom and Center to Node</button> */}
+						<button onClick={handleHashChange}>Center view</button>
+						<button onClick={toggleChildrenVisibility}>Toggle Children Visibility</button>
 					</div>
 				</div>
 			)}

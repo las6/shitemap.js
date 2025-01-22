@@ -18,7 +18,7 @@ const HomePage = () => {
 	};
 
 	return (
-		<div>
+		<div className='front-page'>
 			<h1>Enter Sitemap URL</h1>
 			<form onSubmit={handleSubmit}>
 				<input

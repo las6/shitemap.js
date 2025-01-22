@@ -14,7 +14,7 @@ const ViewPage = ({ params }) => {
 	const { url } = params;
 	const decodedUrl = base64UrlDecode(url); // Decode the URL-safe base64
 	const tmpUrl = new URL(decodedUrl);
-	const siteConfig = { url: `${tmpUrl.protocol}//${tmpUrl.host}` }; // Set the full URL of the base domain
+	const siteConfig = { url: `${tmpUrl.protocol}//${tmpUrl.host}`, layout: 'LR' }; // Set the full URL of the base domain
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -23,7 +23,8 @@ const ViewPage = ({ params }) => {
 			const initialData = makeInitialData(res2);
 			const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
 				initialData.initialNodes,
-				initialData.initialEdges
+				initialData.initialEdges,
+				siteConfig.layout
 			);
 			setData({ layoutedNodes, layoutedEdges });
 		};

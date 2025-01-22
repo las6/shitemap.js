@@ -42,7 +42,9 @@
 
 .title {
   /* color:#2222; */
+  z-index: -1;
   position: absolute;
+  top: 33%;
   margin: 0;
   line-height: 1.15;
   font-size: 6rem;
