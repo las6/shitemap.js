@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import ELK from 'elkjs/lib/elk.bundled.js';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import ELK from "elkjs/lib/elk.bundled.js";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactFlow, {
 	MiniMap,
 	Controls,
@@ -12,16 +12,16 @@ import ReactFlow, {
 	useEdgesState,
 	addEdge,
 	useReactFlow,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
-import './Modal.css';
-import './NodeDetails.css';
-import SectionGroupNode from './SectionGroupNode';
+} from "reactflow";
+import "reactflow/dist/style.css";
+import "./Modal.css";
+import "./NodeDetails.css";
+import SectionGroupNode from "./SectionGroupNode";
 import {
 	detectAlgorithm,
 	computeGroupLayout,
 	computeSectionLayout,
-} from '../components/helpers';
+} from "../components/helpers";
 
 // Stable nodeTypes object — must not be recreated on every render
 const nodeTypes = { sectionGroup: SectionGroupNode };
@@ -47,49 +47,54 @@ async function runELKLayout(nodes, edges, algorithm) {
 	}));
 
 	let layoutOptions;
-	if (algorithm === 'radial') {
+	if (algorithm === "radial") {
 		layoutOptions = {
-			'elk.algorithm': 'radial',
-			'elk.spacing.nodeNode': '30',
-			'elk.radial.compactionStepSize': '5',
+			"elk.algorithm": "radial",
+			"elk.spacing.nodeNode": "30",
+			"elk.radial.compactionStepSize": "5",
 		};
-	} else if (algorithm === 'layered-tb') {
+	} else if (algorithm === "layered-tb") {
 		layoutOptions = {
-			'elk.algorithm': 'layered',
-			'elk.direction': 'DOWN',
-			'elk.layered.wrapping.strategy': 'MULTI_EDGE',
-			'elk.aspectRatio': '1.6',
-			'elk.spacing.nodeNode': '18',
-			'elk.layered.spacing.nodeNodeBetweenLayers': '50',
+			"elk.algorithm": "layered",
+			"elk.direction": "DOWN",
+			"elk.layered.wrapping.strategy": "MULTI_EDGE",
+			"elk.aspectRatio": "1.6",
+			"elk.spacing.nodeNode": "18",
+			"elk.layered.spacing.nodeNodeBetweenLayers": "50",
 		};
 	} else {
 		// layered-lr
 		layoutOptions = {
-			'elk.algorithm': 'layered',
-			'elk.direction': 'RIGHT',
-			'elk.layered.wrapping.strategy': 'MULTI_EDGE',
-			'elk.aspectRatio': '1.6',
-			'elk.spacing.nodeNode': '18',
-			'elk.layered.spacing.nodeNodeBetweenLayers': '50',
+			"elk.algorithm": "layered",
+			"elk.direction": "RIGHT",
+			"elk.layered.wrapping.strategy": "MULTI_EDGE",
+			"elk.aspectRatio": "1.6",
+			"elk.spacing.nodeNode": "18",
+			"elk.layered.spacing.nodeNodeBetweenLayers": "50",
 		};
 	}
 
-	const graph = { id: 'root', layoutOptions, children: elkChildren, edges: elkEdges };
+	const graph = {
+		id: "root",
+		layoutOptions,
+		children: elkChildren,
+		edges: elkEdges,
+	};
 	const layouted = await elk.layout(graph);
-	const isLR = algorithm === 'layered-lr';
+	const isLR = algorithm === "layered-lr";
 
 	return nodes.map((n) => {
 		const elkNode = layouted.children.find((c) => c.id === n.id);
 		const dims = getNodeDimensions(n.data?.depth ?? 1);
 		const depth = n.data?.depth ?? 1;
 		const className =
-			depth === 0 ? 'node-root' : depth === 1 ? 'node-section' : 'node-leaf';
+			depth === 0 ? "node-root" : depth === 1 ? "node-section" : "node-leaf";
 		return {
 			...n,
 			className,
 			position: { x: elkNode?.x ?? 0, y: elkNode?.y ?? 0 },
-			targetPosition: isLR ? 'left' : 'top',
-			sourcePosition: isLR ? 'right' : 'bottom',
+			targetPosition: isLR ? "left" : "top",
+			sourcePosition: isLR ? "right" : "bottom",
 			width: dims.width,
 			height: dims.height,
 			style: { ...n.style, width: dims.width, height: dims.height },
@@ -98,11 +103,11 @@ async function runELKLayout(nodes, edges, algorithm) {
 }
 
 const ALGORITHMS = [
-	{ id: 'groups', label: '⊞ Groups' },
-	{ id: 'sections', label: '⊟ Flat' },
-	{ id: 'layered-lr', label: '→ Layered' },
-	{ id: 'layered-tb', label: '↓ Layered' },
-	{ id: 'radial', label: '◎ Radial' },
+	{ id: "groups", label: "⊞ Groups" },
+	{ id: "sections", label: "⊟ Flat" },
+	{ id: "layered-lr", label: "→ Layered" },
+	{ id: "layered-tb", label: "↓ Layered" },
+	{ id: "radial", label: "◎ Radial" },
 ];
 
 export const Flow = ({ rawNodes, rawEdges, site }) => {
@@ -135,11 +140,11 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 
 		const run = async () => {
 			let layoutedNodes, layoutedEdges;
-			if (algorithm === 'groups') {
+			if (algorithm === "groups") {
 				const result = computeGroupLayout(rawNodes, rawEdges);
 				layoutedNodes = result.nodes;
 				layoutedEdges = result.edges;
-			} else if (algorithm === 'sections') {
+			} else if (algorithm === "sections") {
 				layoutedNodes = computeSectionLayout(rawNodes, rawEdges);
 				layoutedEdges = rawEdges;
 			} else {
@@ -153,7 +158,7 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 		};
 
 		run()
-			.catch((err) => console.error('Layout failed:', err))
+			.catch((err) => console.error("Layout failed:", err))
 			.finally(() => setLayouting(false));
 	}, [rawNodes, rawEdges, algorithm]);
 
@@ -177,16 +182,16 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 	}, [nodes, reactFlowInstance]);
 
 	useEffect(() => {
-		window.addEventListener('hashchange', handleHashChange);
-		return () => window.removeEventListener('hashchange', handleHashChange);
+		window.addEventListener("hashchange", handleHashChange);
+		return () => window.removeEventListener("hashchange", handleHashChange);
 	}, [handleHashChange]);
 
 	const onConnect = useCallback(
 		(params) =>
 			setEdges((eds) =>
-				addEdge({ ...params, type: ConnectionLineType.SmoothStep }, eds)
+				addEdge({ ...params, type: ConnectionLineType.SmoothStep }, eds),
 			),
-		[setEdges]
+		[setEdges],
 	);
 
 	const handleNodeClick = (_, node) => {
@@ -198,19 +203,24 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 	const handleClose = () => {
 		setOpen(false);
 		setSelectedNode(null);
-		history.replaceState(null, null, '');
+		history.replaceState(null, null, "");
 	};
 
-	const handleBreadcrumbClick = useCallback((node) => {
-		setSelectedNode(node);
-		history.replaceState(null, null, `#${node.id}`);
-		reactFlowInstance.fitView({ nodes: [node], padding: 0.3, maxZoom: 1.25 });
-	}, [reactFlowInstance]);
+	const handleBreadcrumbClick = useCallback(
+		(node) => {
+			setSelectedNode(node);
+			history.replaceState(null, null, `#${node.id}`);
+			reactFlowInstance.fitView({ nodes: [node], padding: 0.3, maxZoom: 1.25 });
+		},
+		[reactFlowInstance],
+	);
 
 	const toggleChildrenVisibility = useCallback(() => {
 		if (!selectedNode) return;
 		const getDescendants = (nodeId) => {
-			const kids = edges.filter((e) => e.source === nodeId).map((e) => e.target);
+			const kids = edges
+				.filter((e) => e.source === nodeId)
+				.map((e) => e.target);
 			return kids.flatMap((kidId) => [kidId, ...getDescendants(kidId)]);
 		};
 		const descendants = getDescendants(selectedNode.id);
@@ -280,7 +290,10 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 		const set = new Set();
 		nodes.forEach((n) => {
 			const kids = edges.filter((e) => e.source === n.id).map((e) => e.target);
-			if (kids.length > 0 && kids.some((kidId) => hiddenNodes.includes(kidId))) {
+			if (
+				kids.length > 0 &&
+				kids.some((kidId) => hiddenNodes.includes(kidId))
+			) {
 				set.add(n.id);
 			}
 		});
@@ -289,7 +302,7 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 
 	const filteredNodes = nodes.filter((n) => !isHidden(n.id));
 	const filteredEdges = edges.filter(
-		(e) => !isHidden(e.source) && !isHidden(e.target)
+		(e) => !isHidden(e.source) && !isHidden(e.target),
 	);
 
 	// Augment nodes with highlight/collapsed classes without mutating layout state
@@ -299,14 +312,14 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 		if (descendantDepth) {
 			classes.push(
 				descendantDepth === 1
-					? 'node-selected-child-1'
+					? "node-selected-child-1"
 					: descendantDepth === 2
-					? 'node-selected-child-2'
-					: 'node-selected-child-3'
+						? "node-selected-child-2"
+						: "node-selected-child-3",
 			);
 		}
-		if (collapsedNodeIds.has(n.id)) classes.push('node-collapsed');
-		const newClassName = classes.filter(Boolean).join(' ').trim();
+		if (collapsedNodeIds.has(n.id)) classes.push("node-collapsed");
+		const newClassName = classes.filter(Boolean).join(" ").trim();
 		return newClassName !== n.className ? { ...n, className: newClassName } : n;
 	});
 
@@ -318,7 +331,7 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 						{ALGORITHMS.map((a) => (
 							<button
 								key={a.id}
-								className={algorithm === a.id ? 'active' : ''}
+								className={algorithm === a.id ? "active" : ""}
 								onClick={() => setAlgorithm(a.id)}
 							>
 								{a.label}
@@ -344,12 +357,19 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 					>
 						<MiniMap zoomable pannable />
 						<Controls />
-						<Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#e0e0e0" />
+						<Background
+							variant={BackgroundVariant.Dots}
+							gap={20}
+							size={1}
+							color="#e0e0e0"
+						/>
 					</ReactFlow>
 				</div>
 				{open && selectedNode && (
 					<div className="node-details">
-						<span className="close" onClick={handleClose}>&times;</span>
+						<span className="close" onClick={handleClose}>
+							&times;
+						</span>
 						<div className="node-details-content">
 							<h2>{selectedNode.data.label}</h2>
 							{breadcrumbs.length > 1 && (
@@ -358,8 +378,10 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 										<span key={n.id}>
 											{i > 0 && <span className="breadcrumb-sep">›</span>}
 											<span
-												className={`breadcrumb-item${n.id === selectedNode.id ? ' current' : ''}`}
-												onClick={() => n.id !== selectedNode.id && handleBreadcrumbClick(n)}
+												className={`breadcrumb-item${n.id === selectedNode.id ? " current" : ""}`}
+												onClick={() =>
+													n.id !== selectedNode.id && handleBreadcrumbClick(n)
+												}
 											>
 												{n.data.label}
 											</span>
@@ -368,18 +390,26 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 								</div>
 							)}
 							{selectedNode.url ? (
-								<a href={selectedNode.url} target="_blank" rel="noopener noreferrer">
-									<span className="material-symbols-sharp">open_in_new</span>{' '}
+								<a
+									href={selectedNode.url}
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<span className="material-symbols-sharp">open_in_new</span>{" "}
 									{selectedNode.url}
 								</a>
 							) : (
-								<span className="node-path">{selectedNode.data.fullPath || selectedNode.data.label}</span>
+								<span className="node-path">
+									{selectedNode.data.fullPath || selectedNode.data.label}
+								</span>
 							)}
 							<button onClick={handleHashChange}>Center view</button>
-							<button onClick={toggleChildrenVisibility}>Toggle child pages</button>
+							<button onClick={toggleChildrenVisibility}>
+								Toggle child pages
+							</button>
 							{selectedNode.url && (
 								<button
-									className={iframeOpen ? 'active' : ''}
+									className={iframeOpen ? "active" : ""}
 									onClick={() => {
 										setIframeUrl(selectedNode.url);
 										setIframeOpen((v) => !v);
@@ -392,16 +422,26 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 					</div>
 				)}
 			</div>
-			<div className={`iframe-pane${iframeOpen ? ' is-open' : ''}`}>
+			<div className={`iframe-pane${iframeOpen ? " is-open" : ""}`}>
 				{iframeUrl && (
 					<>
 						<div className="iframe-header">
-							<span className="iframe-url" title={iframeUrl}>{iframeUrl}</span>
-							<a href={iframeUrl} target="_blank" rel="noopener noreferrer" className="iframe-btn">
+							<span className="iframe-url" title={iframeUrl}>
+								{iframeUrl}
+							</span>
+							<a
+								href={iframeUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="iframe-btn"
+							>
 								<span className="material-symbols-sharp">open_in_new</span>
 							</a>
-							<button className="iframe-btn" onClick={() => setIframeOpen(false)}>
-								<span className="material-symbols-sharp">close</span>
+							<button
+								className="iframe-btn"
+								onClick={() => setIframeOpen(false)}
+							>
+								<span className="close ">&times;</span>
 							</button>
 						</div>
 						<iframe src={iframeUrl} title="Page preview" />

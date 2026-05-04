@@ -1,412 +1,442 @@
 :root {
-  --theme: salmon;
-  --node-root-bg: #1a1a1a;
-  --node-root-color: #fff;
-  --node-section-bg: #eef5fb;
-  --node-section-color: #1a3344;
-  --node-section-border: #b3d4e8;
-  --node-section-group-bg: #f2f8fd;
-  --node-leaf-bg: #fff;
-  --node-leaf-color: #333;
-  --node-leaf-border: #ddd;
+	--theme: salmon;
+	--node-root-bg: #1a1a1a;
+	--node-root-color: #fff;
+	--node-section-bg: #eef5fb;
+	--node-section-color: #1a3344;
+	--node-section-border: #b3d4e8;
+	--node-section-group-bg: #f2f8fd;
+	--node-leaf-bg: #fff;
+	--node-leaf-color: #333;
+	--node-leaf-border: #ddd;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --node-root-bg: #fff;
-    --node-root-color: #000;
-    --node-section-bg: #1a3344;
-    --node-section-color: #c8e4f5;
-    --node-section-border: #2a5572;
-    --node-section-group-bg: #111e2a;
-    --node-leaf-bg: #1a1a1a;
-    --node-leaf-color: #ccc;
-    --node-leaf-border: #333;
-  }
+	:root {
+		--node-root-bg: #fff;
+		--node-root-color: #000;
+		--node-section-bg: #1a3344;
+		--node-section-color: #c8e4f5;
+		--node-section-border: #2a5572;
+		--node-section-group-bg: #111e2a;
+		--node-leaf-bg: #1a1a1a;
+		--node-leaf-color: #ccc;
+		--node-leaf-border: #333;
+	}
 }
 
 html,
 body {
-  padding: 0;
-  margin: 0;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+	padding: 0;
+	margin: 0;
+	font-family:
+		Inter,
+		-apple-system,
+		BlinkMacSystemFont,
+		Segoe UI,
+		Roboto,
+		Oxygen,
+		Ubuntu,
+		Cantarell,
+		Fira Sans,
+		Droid Sans,
+		Helvetica Neue,
+		sans-serif;
 }
 
 .material-symbols-sharp {
-  vertical-align: middle !important;
-  font-size: inherit !important;
-  line-height: inherit !important;
+	vertical-align: middle !important;
+	font-size: inherit !important;
+	line-height: inherit !important;
+	position: inherit !important;
 }
 
-h1,h2,h3,h4,h5,button {
-  font-family: 'Doto', sans-serif;
-  font-weight: 600;
+h1,
+h2,
+h3,
+h4,
+h5,
+button {
+	font-family: "Doto", sans-serif;
+	font-weight: 600;
 }
 
 a {
-  color: inherit;
-  text-decoration: none;
+	color: inherit;
+	text-decoration: none;
 }
 
 * {
-  box-sizing: border-box;
+	box-sizing: border-box;
 }
 
 @media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-  body {
-    color: white;
-    background: black;
-  }
+	html {
+		color-scheme: dark;
+	}
+	body {
+		color: white;
+		background: black;
+	}
 }
 
 /* ---------- home page ---------- */
 
 .front-page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
 }
 
 form {
-  display: flex;
-  gap: 3px;
-  width: 100%;
+	display: flex;
+	gap: 3px;
+	width: 100%;
 }
 
 form input {
-  padding: 5px 8px;
-  font-family: Courier;
-  font-weight: 600;
-  min-width: 28em;
+	padding: 5px 8px;
+	font-family: Courier;
+	font-weight: 600;
+	min-width: 28em;
 }
 
 form > * {
-  flex: 1 1 auto;
+	flex: 1 1 auto;
 }
 
 form button {
-  font-weight: 600;
+	font-weight: 600;
 }
 
 .presets {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  justify-content: center;
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	justify-content: center;
 }
 
 .preset-btn {
-  font-family: Inter, sans-serif !important;
-  font-size: 0.8rem;
-  padding: 4px 10px;
-  background: transparent;
-  border: 1px solid #aaa;
-  border-radius: 20px;
-  cursor: pointer;
-  color: inherit;
-  opacity: 0.7;
-  transition: opacity 0.15s;
+	font-family: Inter, sans-serif !important;
+	font-size: 0.8rem;
+	padding: 4px 10px;
+	background: transparent;
+	border: 1px solid #aaa;
+	border-radius: 20px;
+	cursor: pointer;
+	color: inherit;
+	opacity: 0.7;
+	transition: opacity 0.15s;
 }
 
 .preset-btn:hover {
-  opacity: 1;
+	opacity: 1;
 }
 
 /* ---------- flow canvas ---------- */
 
 .app-layout {
-  display: flex;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+	display: flex;
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
 }
 
 .sitemap-pane {
-  flex: 1 1 auto;
-  min-width: 0;
-  position: relative;
-  display: flex;
-  flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+	position: relative;
+	display: flex;
+	flex-direction: column;
 }
 
 .layoutflow {
-  flex: 1 1 auto;
-  min-height: 0;
-  width: 100%;
-  height: 100%;
+	flex: 1 1 auto;
+	min-height: 0;
+	width: 100%;
+	height: 100%;
 }
 
 .iframe-pane {
-  flex: 0 0 0%;
-  width: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  border-left: none;
-  transition: flex-basis 0.3s ease, border-color 0.3s ease;
-  background: #fff;
+	flex: 0 0 0%;
+	width: 0;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	border-left: none;
+	transition:
+		flex-basis 0.3s ease,
+		border-color 0.3s ease;
+	background: #fff;
 }
 
 .iframe-pane.is-open {
-  flex: 0 0 45%;
-  width: 45%;
-  border-left: 1px solid #ccc;
+	flex: 0 0 45%;
+	width: 45%;
+	border-left: 1px solid #ccc;
 }
 
 .iframe-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-bottom: 1px solid #eee;
-  background: #f8f8f8;
-  min-height: 36px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 10px;
+	border-bottom: 1px solid #eee;
+	background: #f8f8f8;
+	min-height: 36px;
+
+	button span,
+	a span {
+		color: #666;
+	}
 }
 
 .iframe-url {
-  flex: 1;
-  font-family: Courier, monospace;
-  font-size: 0.7rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  opacity: 0.7;
+	flex: 1;
+	font-family: Courier, monospace;
+	font-size: 0.7rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	opacity: 0.7;
 }
 
 .iframe-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 2px 4px;
-  display: flex;
-  align-items: center;
-  color: inherit;
-  opacity: 0.6;
-  font-size: 1rem;
-  font-family: inherit;
-  line-height: 1;
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 2px 4px;
+	display: flex;
+	align-items: center;
+	color: inherit;
+	opacity: 0.6;
+	font-size: 1rem;
+	font-family: inherit;
+	/*line-height: 1;*/
 }
 
 .iframe-btn:hover {
-  opacity: 1;
+	opacity: 1;
 }
 
 .iframe-pane iframe {
-  flex: 1;
-  width: 100%;
-  border: none;
+	flex: 1;
+	width: 100%;
+	border: none;
 }
 
 .controls {
-  display: flex;
-  gap: 3px;
-  margin: 6px;
-  position: absolute;
-  box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.08);
-  z-index: 1111;
+	display: flex;
+	gap: 3px;
+	margin: 6px;
+	position: absolute;
+	box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.08);
+	z-index: 1111;
 }
 
 .controls button {
-  border: none;
-  background: #fefefe;
-  border: 1px solid #eee;
-  box-sizing: content-box;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
-  padding: 5px 10px;
-  font-weight: 600;
-  font-size: 0.85rem;
-  letter-spacing: 0.01em;
+	border: none;
+	background: #fefefe;
+	border: 1px solid #eee;
+	box-sizing: content-box;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+	padding: 5px 10px;
+	font-weight: 600;
+	font-size: 0.85rem;
+	letter-spacing: 0.01em;
 }
 
 .controls button:hover {
-  background-color: #f4f4f4;
+	background-color: #f4f4f4;
 }
 
 .controls button.active {
-  background-color: #1a1a1a;
-  color: #fff;
+	background-color: #1a1a1a;
+	color: #fff;
 }
 
 /* ---------- loading ---------- */
 
 .loading-screen {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100vw;
-  height: 100vh;
-  font-family: 'Doto', sans-serif;
-  font-size: 1.5rem;
-  opacity: 0.5;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100vw;
+	height: 100vh;
+	font-family: "Doto", sans-serif;
+	font-size: 1.5rem;
+	opacity: 0.5;
 }
 
 .layout-loading {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: 'Doto', sans-serif;
-  font-size: 1rem;
-  opacity: 0.4;
-  z-index: 1112;
-  pointer-events: none;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	font-family: "Doto", sans-serif;
+	font-size: 1rem;
+	opacity: 0.4;
+	z-index: 1112;
+	pointer-events: none;
 }
 
 /* ---------- nodes by depth ---------- */
 
 /* All default nodes */
 .react-flow__node-default {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-size: 0.75rem;
-  line-height: 1.2;
-  /* Critical: prevent text from expanding node beyond declared dimensions */
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  padding: 0 8px;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  transition: box-shadow 0.15s;
-  position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	font-size: 0.75rem;
+	line-height: 1.2;
+	/* Critical: prevent text from expanding node beyond declared dimensions */
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	padding: 0 8px;
+	border-radius: 6px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+	transition: box-shadow 0.15s;
+	position: relative;
 }
 
 /* Root node (depth 0) */
 .react-flow__node-default.node-root {
-  background: var(--node-root-bg);
-  color: var(--node-root-color);
-  border: none;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+	background: var(--node-root-bg);
+	color: var(--node-root-color);
+	border: none;
+	border-radius: 4px;
+	font-size: 0.85rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
 }
 
 /* Section nodes (depth 1) */
 .react-flow__node-default.node-section {
-  background: var(--node-section-bg);
-  color: var(--node-section-color);
-  border: 1px solid var(--node-section-border);
-  border-radius: 6px;
-  font-weight: 600;
+	background: var(--node-section-bg);
+	color: var(--node-section-color);
+	border: 1px solid var(--node-section-border);
+	border-radius: 6px;
+	font-weight: 600;
 }
 
 /* Leaf nodes (depth 2+) */
 .react-flow__node-default.node-leaf {
-  background: var(--node-leaf-bg);
-  color: var(--node-leaf-color);
-  border: 1px solid var(--node-leaf-border);
-  border-radius: 12px;
-  font-size: 0.72rem;
+	background: var(--node-leaf-bg);
+	color: var(--node-leaf-color);
+	border: 1px solid var(--node-leaf-border);
+	border-radius: 12px;
+	font-size: 0.72rem;
 }
 
 /* Selected state */
 .react-flow__node-default.selectable.selected,
 .react-flow__node-default.selectable:focus,
 .react-flow__node-default.selectable:focus-visible {
-  box-shadow: 0 0 0 2px var(--theme), 0 4px 12px rgba(0,0,0,0.2) !important;
-  outline: none;
+	box-shadow:
+		0 0 0 2px var(--theme),
+		0 4px 12px rgba(0, 0, 0, 0.2) !important;
+	outline: none;
 }
 
 /* Child/descendant nodes of the selected node — fading amber by depth */
 .react-flow__node-default.node-selected-child-1 {
-  background: #fff3c4 !important;
-  border-color: #f0c040 !important;
-  box-shadow: 0 0 0 1.5px #f0c040, 0 2px 6px rgba(0,0,0,0.1) !important;
+	background: #fff3c4 !important;
+	border-color: #f0c040 !important;
+	box-shadow:
+		0 0 0 1.5px #f0c040,
+		0 2px 6px rgba(0, 0, 0, 0.1) !important;
 }
 .react-flow__node-default.node-selected-child-2 {
-  background: #fffaea !important;
-  border-color: #e8d070 !important;
-  box-shadow: 0 0 0 1px #e8d07080 !important;
+	background: #fffaea !important;
+	border-color: #e8d070 !important;
+	box-shadow: 0 0 0 1px #e8d07080 !important;
 }
 .react-flow__node-default.node-selected-child-3 {
-  background: #fffef5 !important;
-  border-color: #ddd090 !important;
-  box-shadow: 0 0 0 1px #ddd09050 !important;
+	background: #fffef5 !important;
+	border-color: #ddd090 !important;
+	box-shadow: 0 0 0 1px #ddd09050 !important;
 }
 
 /* Nodes with hidden children (collapsed) */
 .react-flow__node-default.node-collapsed,
 .react-flow__node-sectionGroup.node-collapsed {
-  border-style: dashed !important;
-  opacity: 0.8;
+	border-style: dashed !important;
+	opacity: 0.8;
 }
 .react-flow__node-default.node-collapsed::after {
-  content: '…';
-  position: absolute;
-  right: 5px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 11px;
-  opacity: 0.55;
-  pointer-events: none;
+	content: "…";
+	position: absolute;
+	right: 5px;
+	top: 50%;
+	transform: translateY(-50%);
+	font-size: 11px;
+	opacity: 0.55;
+	pointer-events: none;
 }
 
 /* ---------- edges ---------- */
 
 .react-flow__edge-path {
-  stroke: #ccc;
-  stroke-width: 1.5;
+	stroke: #ccc;
+	stroke-width: 1.5;
 }
 
 .react-flow__edge.selected .react-flow__edge-path,
 .react-flow__edge:hover .react-flow__edge-path {
-  stroke: var(--theme);
+	stroke: var(--theme);
 }
 
 /* ---------- section group compound node ---------- */
 
 /* The ReactFlow wrapper for custom type 'sectionGroup' */
 .react-flow__node-sectionGroup {
-  border-radius: 10px;
-  border: 2px solid var(--node-section-border);
-  background: var(--node-section-group-bg);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  overflow: hidden;
+	border-radius: 10px;
+	border: 2px solid var(--node-section-border);
+	background: var(--node-section-group-bg);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+	overflow: hidden;
 }
 
 .react-flow__node-sectionGroup.selected,
 .react-flow__node-sectionGroup:focus,
 .react-flow__node-sectionGroup:focus-visible {
-  box-shadow: 0 0 0 2px var(--theme), 0 4px 12px rgba(0,0,0,0.15) !important;
-  outline: none;
+	box-shadow:
+		0 0 0 2px var(--theme),
+		0 4px 12px rgba(0, 0, 0, 0.15) !important;
+	outline: none;
 }
 
 /* Inner div that fills the node */
 .section-group-node {
-  width: 100%;
-  height: 100%;
-  position: relative;
+	width: 100%;
+	height: 100%;
+	position: relative;
 }
 
 /* Section label bar at the top of each group */
 .section-group-header {
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Doto', sans-serif;
-  font-weight: 600;
-  font-size: 0.82rem;
-  letter-spacing: 0.03em;
-  color: var(--node-section-color);
-  border-bottom: 1px solid var(--node-section-border);
-  padding: 0 12px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  cursor: default;
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-family: "Doto", sans-serif;
+	font-weight: 600;
+	font-size: 0.82rem;
+	letter-spacing: 0.03em;
+	color: var(--node-section-color);
+	border-bottom: 1px solid var(--node-section-border);
+	padding: 0 12px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	cursor: default;
 }
