@@ -385,7 +385,7 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 										setIframeOpen((v) => !v);
 									}}
 								>
-									{iframeOpen ? 'Close preview' : 'Preview'}
+									Preview
 								</button>
 							)}
 						</div>

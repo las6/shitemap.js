@@ -67,6 +67,7 @@
 
 .node-details button.active {
 	background-color: #0056b3;
+	outline: 2px solid #003d80;
 }
 
 .node-details-content {
