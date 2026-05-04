@@ -1,103 +1,193 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import ELK from 'elkjs/lib/elk.bundled.js';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactFlow, {
 	MiniMap,
 	Controls,
 	ConnectionLineType,
 	Background,
+	BackgroundVariant,
 	useNodesState,
 	useEdgesState,
 	addEdge,
 	useReactFlow,
 } from 'reactflow';
-import "reactflow/dist/style.css";
-import './Modal.css'; // Import custom modal styles
-import './NodeDetails.css'; // Import custom node details styles
-import { getLayoutedElements } from '../components/helpers';
+import 'reactflow/dist/style.css';
+import './Modal.css';
+import './NodeDetails.css';
+import SectionGroupNode from './SectionGroupNode';
+import {
+	detectAlgorithm,
+	computeGroupLayout,
+	computeSectionLayout,
+} from '../components/helpers';
 
-export const Flow = ({data, site}) => {
+// Stable nodeTypes object — must not be recreated on every render
+const nodeTypes = { sectionGroup: SectionGroupNode };
 
-	const [nodes, setNodes, onNodesChange] = useNodesState(
-		data.layoutedNodes
-	);
-	const [edges, setEdges, onEdgesChange] = useEdgesState(
-		data.layoutedEdges
-	);
+const elk = new ELK();
+
+function getNodeDimensions(depth) {
+	if (depth === 0) return { width: 200, height: 48 };
+	if (depth === 1) return { width: 172, height: 40 };
+	return { width: 160, height: 34 };
+}
+
+async function runELKLayout(nodes, edges, algorithm) {
+	const elkChildren = nodes.map((n) => ({
+		id: n.id,
+		...getNodeDimensions(n.data?.depth ?? 1),
+	}));
+
+	const elkEdges = edges.map((e) => ({
+		id: e.id,
+		sources: [e.source],
+		targets: [e.target],
+	}));
+
+	let layoutOptions;
+	if (algorithm === 'radial') {
+		layoutOptions = {
+			'elk.algorithm': 'radial',
+			'elk.spacing.nodeNode': '30',
+			'elk.radial.compactionStepSize': '5',
+		};
+	} else if (algorithm === 'layered-tb') {
+		layoutOptions = {
+			'elk.algorithm': 'layered',
+			'elk.direction': 'DOWN',
+			'elk.layered.wrapping.strategy': 'MULTI_EDGE',
+			'elk.aspectRatio': '1.6',
+			'elk.spacing.nodeNode': '18',
+			'elk.layered.spacing.nodeNodeBetweenLayers': '50',
+		};
+	} else {
+		// layered-lr
+		layoutOptions = {
+			'elk.algorithm': 'layered',
+			'elk.direction': 'RIGHT',
+			'elk.layered.wrapping.strategy': 'MULTI_EDGE',
+			'elk.aspectRatio': '1.6',
+			'elk.spacing.nodeNode': '18',
+			'elk.layered.spacing.nodeNodeBetweenLayers': '50',
+		};
+	}
+
+	const graph = { id: 'root', layoutOptions, children: elkChildren, edges: elkEdges };
+	const layouted = await elk.layout(graph);
+	const isLR = algorithm === 'layered-lr';
+
+	return nodes.map((n) => {
+		const elkNode = layouted.children.find((c) => c.id === n.id);
+		const dims = getNodeDimensions(n.data?.depth ?? 1);
+		const depth = n.data?.depth ?? 1;
+		const className =
+			depth === 0 ? 'node-root' : depth === 1 ? 'node-section' : 'node-leaf';
+		return {
+			...n,
+			className,
+			position: { x: elkNode?.x ?? 0, y: elkNode?.y ?? 0 },
+			targetPosition: isLR ? 'left' : 'top',
+			sourcePosition: isLR ? 'right' : 'bottom',
+			width: dims.width,
+			height: dims.height,
+			style: { ...n.style, width: dims.width, height: dims.height },
+		};
+	});
+}
+
+const ALGORITHMS = [
+	{ id: 'groups', label: '⊞ Groups' },
+	{ id: 'sections', label: '⊟ Flat' },
+	{ id: 'layered-lr', label: '→ Layered' },
+	{ id: 'layered-tb', label: '↓ Layered' },
+	{ id: 'radial', label: '◎ Radial' },
+];
+
+export const Flow = ({ rawNodes, rawEdges, site }) => {
+	const [nodes, setNodes, onNodesChange] = useNodesState([]);
+	const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+	const [algorithm, setAlgorithm] = useState(null);
+	const [layouting, setLayouting] = useState(false);
 	const [selectedNode, setSelectedNode] = useState(null);
-	const [direction, setDirection] = useState(site.layout ?? 'LR');
 	const [open, setOpen] = useState(false);
 	const [hiddenNodes, setHiddenNodes] = useState([]);
-	const baseUrl = site.url;
+	const autoDetectedRef = useRef(false);
+	const needsFitViewRef = useRef(false);
 	const reactFlowInstance = useReactFlow();
 
-	const handleHashChange = () => {
-		const hash = window.location.hash.substring(1);
-		if (hash) {
-			const node = nodes.find((n) => n.id === hash);
-			if (node) {
-				reactFlowInstance.fitView({ nodes: [node], padding: 0.3, maxZoom: 1.25 });
-				setSelectedNode(node);
-				setOpen(true);
-			} else {
-				console.log('no node?')
-			}
+	// Auto-detect once when nodes first arrive
+	useEffect(() => {
+		if (rawNodes?.length > 0 && !autoDetectedRef.current) {
+			autoDetectedRef.current = true;
+			setAlgorithm(detectAlgorithm(rawNodes));
 		}
-	};
+	}, [rawNodes]);
 
+	// Run layout whenever nodes or algorithm changes
 	useEffect(() => {
-		setNodes(data.layoutedNodes);
-		setEdges(data.layoutedEdges);
-		handleHashChange();
-	}, [data]);
-	
-	useEffect(() => {		
+		if (!rawNodes || !rawEdges || !algorithm) return;
 
-		window.addEventListener('hashchange', handleHashChange);
-		// handleHashChange(); // Trigger on initial load
+		setLayouting(true);
 
-		return () => {
-			window.removeEventListener('hashchange', handleHashChange);
+		const run = async () => {
+			let layoutedNodes, layoutedEdges;
+			if (algorithm === 'groups') {
+				const result = computeGroupLayout(rawNodes, rawEdges);
+				layoutedNodes = result.nodes;
+				layoutedEdges = result.edges;
+			} else if (algorithm === 'sections') {
+				layoutedNodes = computeSectionLayout(rawNodes, rawEdges);
+				layoutedEdges = rawEdges;
+			} else {
+				layoutedNodes = await runELKLayout(rawNodes, rawEdges, algorithm);
+				layoutedEdges = rawEdges;
+			}
+			setNodes(layoutedNodes);
+			setEdges(layoutedEdges);
+			setHiddenNodes([]);
+			needsFitViewRef.current = true;
 		};
-	}, [nodes, reactFlowInstance]);
-	
+
+		run()
+			.catch((err) => console.error('Layout failed:', err))
+			.finally(() => setLayouting(false));
+	}, [rawNodes, rawEdges, algorithm]);
+
+	// Fit view only after a fresh layout, not on every node state change (e.g. selection)
 	useEffect(() => {
-		handleHashChange();
-	}, [data, reactFlowInstance]);
+		if (!layouting && needsFitViewRef.current) {
+			needsFitViewRef.current = false;
+			setTimeout(() => reactFlowInstance.fitView({ padding: 0.08 }), 60);
+		}
+	}, [layouting]);
+
+	const handleHashChange = useCallback(() => {
+		const hash = window.location.hash.substring(1);
+		if (!hash) return;
+		const node = nodes.find((n) => n.id === hash);
+		if (node) {
+			reactFlowInstance.fitView({ nodes: [node], padding: 0.3, maxZoom: 1.25 });
+			setSelectedNode(node);
+			setOpen(true);
+		}
+	}, [nodes, reactFlowInstance]);
+
+	useEffect(() => {
+		window.addEventListener('hashchange', handleHashChange);
+		return () => window.removeEventListener('hashchange', handleHashChange);
+	}, [handleHashChange]);
 
 	const onConnect = useCallback(
 		(params) =>
 			setEdges((eds) =>
-				addEdge(
-					{ ...params, type: ConnectionLineType.SmoothStep, animated: true },
-					eds
-				)
+				addEdge({ ...params, type: ConnectionLineType.SmoothStep }, eds)
 			),
-		[]
-	);
-	
-	const onLayout = useCallback(
-		(direction) => {
-			const { nodes: layoutedNodes, edges: layoutedEdges } =
-				getLayoutedElements(nodes, edges, direction);
-
-			setNodes([...layoutedNodes]);
-			setEdges([...layoutedEdges]);
-		},
-		[nodes, edges]
+		[setEdges]
 	);
 
-	useEffect(() => {
-		onLayout(direction);
-	}, [direction]);
-
-	const onEdgeUpdate = useCallback(
-		(oldEdge, newConnection) =>
-			setEdges((els) => updateEdge(oldEdge, newConnection, els)),
-		[]
-	);
-
-	const handleNodeClick = (event, node) => {
+	const handleNodeClick = (_, node) => {
 		setSelectedNode(node);
 		setOpen(true);
 		history.replaceState(null, null, `#${node.id}`);
@@ -106,93 +196,139 @@ export const Flow = ({data, site}) => {
 	const handleClose = () => {
 		setOpen(false);
 		setSelectedNode(null);
-		history.replaceState(null, null, ``);
+		history.replaceState(null, null, '');
 	};
 
-	const toggleChildrenVisibility = () => {
-		if (selectedNode) {
-			const toggleVisibility = (nodeId) => {
-				const children = edges.filter(edge => edge.source === nodeId).map(edge => edge.target);
-				setHiddenNodes(prevHiddenNodes => {
-					const newHiddenNodes = [...prevHiddenNodes];
-					children.forEach(childId => {
-						const index = newHiddenNodes.indexOf(childId);
-						if (index > -1) {
-							newHiddenNodes.splice(index, 1);
-						} else {
-							newHiddenNodes.push(childId);
-						}
-						toggleVisibility(childId); // Recursively toggle visibility for children
-					});
-					return newHiddenNodes;
+	const toggleChildrenVisibility = useCallback(() => {
+		if (!selectedNode) return;
+		const getDescendants = (nodeId) => {
+			const kids = edges.filter((e) => e.source === nodeId).map((e) => e.target);
+			return kids.flatMap((kidId) => [kidId, ...getDescendants(kidId)]);
+		};
+		const descendants = getDescendants(selectedNode.id);
+		if (descendants.length === 0) return;
+		setHiddenNodes((prev) => {
+			const anyHidden = descendants.some((id) => prev.includes(id));
+			if (anyHidden) {
+				return prev.filter((id) => !descendants.includes(id));
+			} else {
+				return [...prev, ...descendants.filter((id) => !prev.includes(id))];
+			}
+		});
+	}, [selectedNode, edges]);
+
+	const isHidden = (id) => {
+		if (hiddenNodes.includes(id)) return true;
+		const parent = edges.find((e) => e.target === id);
+		return parent ? isHidden(parent.source) : false;
+	};
+
+	// All descendants of the selected node, mapped to their depth (1 = direct child)
+	const selectedDescendantDepths = useMemo(() => {
+		if (!selectedNode) return new Map();
+		const map = new Map();
+		const traverse = (nodeId, depth) => {
+			edges
+				.filter((e) => e.source === nodeId)
+				.forEach((e) => {
+					if (!map.has(e.target)) {
+						map.set(e.target, depth);
+						traverse(e.target, depth + 1);
+					}
 				});
-			};
-			toggleVisibility(selectedNode.id);
-			onLayout(direction); // Trigger relayout after toggling
-		}
-	};
+		};
+		traverse(selectedNode.id, 1);
+		return map;
+	}, [selectedNode, edges]);
 
-	const isNodeHidden = (nodeId) => {
-		if (hiddenNodes.includes(nodeId)) {
-			return true;
-		}
-		const parentEdge = edges.find(edge => edge.target === nodeId);
-		if (parentEdge) {
-			return isNodeHidden(parentEdge.source);
-		}
-		return false;
-	};
+	// Nodes that have at least one directly hidden child (collapsed)
+	const collapsedNodeIds = useMemo(() => {
+		const set = new Set();
+		nodes.forEach((n) => {
+			const kids = edges.filter((e) => e.source === n.id).map((e) => e.target);
+			if (kids.length > 0 && kids.some((kidId) => hiddenNodes.includes(kidId))) {
+				set.add(n.id);
+			}
+		});
+		return set;
+	}, [nodes, edges, hiddenNodes]);
 
-	const filteredNodes = nodes.filter(node => !isNodeHidden(node.id));
-	const filteredEdges = edges.filter(edge => !isNodeHidden(edge.source) && !isNodeHidden(edge.target));
+	const filteredNodes = nodes.filter((n) => !isHidden(n.id));
+	const filteredEdges = edges.filter(
+		(e) => !isHidden(e.source) && !isHidden(e.target)
+	);
+
+	// Augment nodes with highlight/collapsed classes without mutating layout state
+	const displayNodes = filteredNodes.map((n) => {
+		const classes = [n.className];
+		const descendantDepth = selectedDescendantDepths.get(n.id);
+		if (descendantDepth) {
+			classes.push(
+				descendantDepth === 1
+					? 'node-selected-child-1'
+					: descendantDepth === 2
+					? 'node-selected-child-2'
+					: 'node-selected-child-3'
+			);
+		}
+		if (collapsedNodeIds.has(n.id)) classes.push('node-collapsed');
+		const newClassName = classes.filter(Boolean).join(' ').trim();
+		return newClassName !== n.className ? { ...n, className: newClassName } : n;
+	});
 
 	return (
 		<div className="layoutflow">
 			<div className="controls">
-				<button className={ direction == 'TB' ? 'active' : ''} onClick={() => setDirection("TB")}>Top-down</button>
-				<button className={direction == 'LR' ? 'active' : ''}  onClick={() => setDirection("LR")}>Left-to-Right</button>
+				{ALGORITHMS.map((a) => (
+					<button
+						key={a.id}
+						className={algorithm === a.id ? 'active' : ''}
+						onClick={() => setAlgorithm(a.id)}
+					>
+						{a.label}
+					</button>
+				))}
 			</div>
-			<ReactFlow
-				nodes={filteredNodes}
-				edges={filteredEdges}
-				onNodesChange={onNodesChange}
+			{layouting && <div className="layout-loading">Laying out…</div>}
+		<ReactFlow
+			nodes={displayNodes}
+			edges={filteredEdges}
+			nodeTypes={nodeTypes}
+			onNodesChange={onNodesChange}
 				onEdgesChange={onEdgesChange}
 				nodesConnectable={false}
-				nodesDraggable={false}
+				nodesDraggable={true}
 				onConnect={onConnect}
-				onEdgeUpdate={onEdgeUpdate}
 				onNodeClick={handleNodeClick}
 				connectionLineType={ConnectionLineType.SmoothStep}
 				proOptions={{ hideAttribution: false }}
-				snapToGrid
 				fitView
-				maxZoom={2}
+				maxZoom={3}
 				minZoom={0.01}
 			>
-				<MiniMap />
+				<MiniMap zoomable pannable />
 				<Controls />
-				<Background />
+				<Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#e0e0e0" />
 			</ReactFlow>
-			{open && (
+			{open && selectedNode && (
 				<div className="node-details">
-					<span className="close" onClick={handleClose}>
-						&times;
-					</span>
+					<span className="close" onClick={handleClose}>&times;</span>
 					<div className="node-details-content">
-						<h2>Node Details</h2>
-
-						{selectedNode && (
+						<h2>{selectedNode.data.label}</h2>
+						{selectedNode.url ? (
 							<a
-								href={`${baseUrl}${selectedNode.data.label}`}
+								href={selectedNode.url}
 								target="_blank"
 								rel="noopener noreferrer"
 							>
 								<span className="material-symbols-sharp">open_in_new</span>{' '}
-								{`${selectedNode.data.label}`}
+								{selectedNode.url}
 							</a>
+						) : (
+							<span className="node-path">{selectedNode.data.fullPath || selectedNode.data.label}</span>
 						)}
 						<button onClick={handleHashChange}>Center view</button>
-						<button onClick={toggleChildrenVisibility}>Toggle Children Visibility</button>
+						<button onClick={toggleChildrenVisibility}>Toggle child pages</button>
 					</div>
 				</div>
 			)}

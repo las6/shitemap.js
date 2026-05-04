@@ -4,6 +4,12 @@
 }
 .node-details a { 
 	font-size: 0.8em;
+	word-break: break-all;
+}
+.node-path {
+	font-size: 0.8em;
+	opacity: 0.6;
+	font-family: Courier, monospace;
 }
 .node-details a:hover { 
 	text-decoration: underline;

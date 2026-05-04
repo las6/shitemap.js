@@ -32,3 +32,8 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+## Project State (April 2026)
+**What it is**: An MVP for a visual sitemap viewer. It takes a sitemap URL, encodes it, fetches the underlying XML using `sitemapper` via a Next.js API route, and renders it as a visual Directed Acyclic Graph (DAG) using `reactflow` and `dagre`.
+**Tech Stack**: Next.js 14, ReactFlow, Dagre, Sitemapper.
+**Where it was left off**: A functional minimal viable product. The core functionality of parsing a sitemap and rendering the graph view is implemented (`app/view/[url]/page.js` and `app/Flow.js`). 

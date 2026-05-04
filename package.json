@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "dagre": "github:dagrejs/dagre",
+    "elkjs": "^0.11.1",
     "eslint": "^8.57.1",
     "next": "^14.2.22",
     "react": "^18.3.1",

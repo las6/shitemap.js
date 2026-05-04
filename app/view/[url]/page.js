@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Flow } from "../../Flow"; // Adjust the path as needed
-import { makeInitialData, getLayoutedElements } from "../../../components/helpers";
+import { Flow } from "../../Flow";
+import { makeInitialData } from "../../../components/helpers";
 import { ReactFlowProvider } from 'reactflow';
 
 const base64UrlDecode = (str) => {
@@ -10,59 +10,29 @@ const base64UrlDecode = (str) => {
 };
 
 const ViewPage = ({ params }) => {
-	const [data, setData] = useState(null);
+	const [rawData, setRawData] = useState(null);
 	const { url } = params;
-	const decodedUrl = base64UrlDecode(url); // Decode the URL-safe base64
+	const decodedUrl = base64UrlDecode(url);
 	const tmpUrl = new URL(decodedUrl);
-	const siteConfig = { url: `${tmpUrl.protocol}//${tmpUrl.host}`, layout: 'LR' }; // Set the full URL of the base domain
+	const siteConfig = { url: `${tmpUrl.protocol}//${tmpUrl.host}` };
 
 	useEffect(() => {
 		const fetchData = async () => {
 			const response = await fetch(`/api/sitemapper?url=${encodeURIComponent(decodedUrl)}`);
 			const res2 = await response.json();
-			const initialData = makeInitialData(res2);
-			const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-				initialData.initialNodes,
-				initialData.initialEdges,
-				siteConfig.layout
-			);
-			setData({ layoutedNodes, layoutedEdges });
+			const { initialNodes, initialEdges } = makeInitialData(res2);
+			setRawData({ nodes: initialNodes, edges: initialEdges });
 		};
 		fetchData();
 	}, [decodedUrl]);
 
-	// useEffect(() => {
-	// 	const handleHashChange = () => {
-	// 		const hash = window.location.hash.substring(1);
-	// 		if (hash) {
-	// 			const node = nodes.find(n => n.id === hash);
-	// 			if (node) {
-	// 				const { x, y } = node.position;
-	// 				reactFlowInstance.zoomTo(1.5, { x, y });
-	// 				reactFlowInstance.fitView({ nodes: [node], padding: 0.1 });
-	// 				setSelectedNode(node);
-	// 				setOpen(true);
-	// 			}
-	// 		}
-	// 	};
-
-	// 	window.addEventListener('hashchange', handleHashChange);
-	// 	handleHashChange(); // Trigger on initial load
-
-	// 	return () => {
-	// 		window.removeEventListener('hashchange', handleHashChange);
-	// 	};
-	// }, [data]);
-
-	if (!data) {
-		return <div>Loading...</div>;
+	if (!rawData) {
+		return <div className="loading-screen">Loading sitemap…</div>;
 	}
-
-
 
 	return (
 		<ReactFlowProvider>
-			<Flow data={data} site={siteConfig} />
+			<Flow rawNodes={rawData.nodes} rawEdges={rawData.edges} site={siteConfig} />
 		</ReactFlowProvider>
 	);
 };

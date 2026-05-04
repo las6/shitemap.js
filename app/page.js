@@ -7,30 +7,47 @@ const base64UrlEncode = (str) => {
 	return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 };
 
+const PRESETS = [
+	{ label: 'Cricket Lighters', url: 'https://www.cricketlighters.com/sitemap.xml' },
+	{ label: 'Jalostaja', url: 'https://jalostaja.fi/sitemap_index.xml' },
+	{ label: 'Airam', url: 'https://airam.fi/page-sitemap.xml' },
+];
+
 const HomePage = () => {
-	const [url, setUrl] = useState("https://www.cricketlighters.com/sitemap.xml");
+	const [url, setUrl] = useState('');
 	const router = useRouter();
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		const encodedUrl = base64UrlEncode(url); // Encode the URL using URL-safe base64
+		const encodedUrl = base64UrlEncode(url);
+		router.push(`/view/${encodedUrl}`);
+	};
+
+	const handlePreset = (presetUrl) => {
+		const encodedUrl = base64UrlEncode(presetUrl);
 		router.push(`/view/${encodedUrl}`);
 	};
 
 	return (
 		<div className='front-page'>
-			<h1>Enter Sitemap URL</h1>
 			<form onSubmit={handleSubmit}>
 				<input
 					type="text"
 					value={url}
 					onChange={(e) => setUrl(e.target.value)}
-					placeholder="Enter sitemap URL"
-					autoComplete='domain'
+					placeholder="https://example.com/sitemap.xml"
+					autoComplete='off'
 					required
 				/>
-				<button type="submit">Submit</button>
+				<button type="submit">View</button>
 			</form>
+			<div className="presets">
+				{PRESETS.map((p) => (
+					<button key={p.url} className="preset-btn" onClick={() => handlePreset(p.url)}>
+						{p.label}
+					</button>
+				))}
+			</div>
 		</div>
 	);
 };
