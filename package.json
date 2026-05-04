@@ -12,7 +12,7 @@
     "dagre": "github:dagrejs/dagre",
     "elkjs": "^0.11.1",
     "eslint": "^8.57.1",
-    "next": "^14.2.22",
+    "next": "14.2.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "reactflow": "^11.2.0",
