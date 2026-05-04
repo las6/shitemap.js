@@ -119,9 +119,87 @@ form button {
 
 /* ---------- flow canvas ---------- */
 
-.layoutflow {
+.app-layout {
+  display: flex;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
+}
+
+.sitemap-pane {
+  flex: 1 1 auto;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.layoutflow {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.iframe-pane {
+  flex: 0 0 0%;
+  width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-left: none;
+  transition: flex-basis 0.3s ease, border-color 0.3s ease;
+  background: #fff;
+}
+
+.iframe-pane.is-open {
+  flex: 0 0 45%;
+  width: 45%;
+  border-left: 1px solid #ccc;
+}
+
+.iframe-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-bottom: 1px solid #eee;
+  background: #f8f8f8;
+  min-height: 36px;
+}
+
+.iframe-url {
+  flex: 1;
+  font-family: Courier, monospace;
+  font-size: 0.7rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.7;
+}
+
+.iframe-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  color: inherit;
+  opacity: 0.6;
+  font-size: 1rem;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.iframe-btn:hover {
+  opacity: 1;
+}
+
+.iframe-pane iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
 }
 
 .controls {

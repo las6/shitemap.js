@@ -298,6 +298,40 @@ const DIM = {
 	maxRowsPerCol: 14,
 };
 
+// Recursive tree layout: positions nodeId and all its descendants as a proper
+// top-down tree so edges within a section never cross each other.
+function layoutSubtree(nodeId, childrenMap, nodeW, rootH, cardH, hGap, vGap, isRoot = true) {
+	const nodeH = isRoot ? rootH : cardH;
+	const kids = childrenMap.get(nodeId) ?? [];
+
+	if (kids.length === 0) {
+		return { width: nodeW, height: nodeH, nodes: [{ id: nodeId, x: 0, y: 0, h: nodeH }] };
+	}
+
+	const childTrees = kids.map((kidId) =>
+		layoutSubtree(kidId, childrenMap, nodeW, rootH, cardH, hGap, vGap, false)
+	);
+
+	const totalChildrenW =
+		childTrees.reduce((sum, t) => sum + t.width, 0) + hGap * (kids.length - 1);
+	const totalW = Math.max(nodeW, totalChildrenW);
+
+	const allNodes = [{ id: nodeId, x: (totalW - nodeW) / 2, y: 0, h: nodeH }];
+	let childX = (totalW - totalChildrenW) / 2;
+	childTrees.forEach((childTree) => {
+		childTree.nodes.forEach((n) => {
+			allNodes.push({ ...n, x: n.x + childX, y: n.y + nodeH + vGap });
+		});
+		childX += childTree.width + hGap;
+	});
+
+	return {
+		width: totalW,
+		height: nodeH + vGap + Math.max(...childTrees.map((t) => t.height)),
+		nodes: allNodes,
+	};
+}
+
 export function computeSectionLayout(nodes, edges) {
 	// Build parent → children map
 	const childrenMap = new Map();
@@ -324,48 +358,28 @@ export function computeSectionLayout(nodes, edges) {
 
 	sections.forEach((section) => {
 		const descendants = getAllDescendants(section.id);
-		const n = descendants.length;
 
-		// Dynamic card width based on longest descendant label
+		// Unified node width per section (fits the longest label in the subtree)
 		const maxDescW = descendants.length > 0
 			? Math.max(...descendants.map((d) => estimateLabelWidth(d.data?.label || '')))
 			: DIM.cardW;
-		const cardW = Math.max(DIM.cardW, Math.min(240, maxDescW));
-		const sectionNodeW = Math.max(DIM.sectionW, Math.min(240, estimateLabelWidth(section.data?.label || '')));
+		const nodeW = Math.max(
+			DIM.sectionW,
+			Math.min(240, Math.max(maxDescW, estimateLabelWidth(section.data?.label || '')))
+		);
 
-		// Determine grid shape
-		const rowsPerCol =
-			n <= 5
-				? n
-				: Math.min(DIM.maxRowsPerCol, Math.ceil(Math.sqrt(n * 1.4)));
-		const numCols = n > 0 ? Math.ceil(n / rowsPerCol) : 0;
-		const gridW =
-			numCols > 0 ? numCols * (cardW + DIM.hGap) - DIM.hGap : 0;
+		// Lay out the section's subtree as a proper tree — no crossing edges
+		const tree = layoutSubtree(
+			section.id, childrenMap, nodeW,
+			DIM.sectionH, DIM.cardH,
+			DIM.hGap * 2, DIM.sectionToCards
+		);
 
-		const groupW = Math.max(sectionNodeW, gridW);
-
-		// Section header — centered over the grid
-		positioned.set(section.id, {
-			x: curX + (groupW - sectionNodeW) / 2,
-			y: sectionsY,
-			w: sectionNodeW,
-			h: DIM.sectionH,
+		tree.nodes.forEach(({ id, x, y, h }) => {
+			positioned.set(id, { x: curX + x, y: sectionsY + y, w: nodeW, h });
 		});
 
-		// Children
-		const childrenStartY = sectionsY + DIM.sectionH + DIM.sectionToCards;
-		descendants.forEach((child, i) => {
-			const col = Math.floor(i / rowsPerCol);
-			const row = i % rowsPerCol;
-			positioned.set(child.id, {
-				x: curX + col * (cardW + DIM.hGap),
-				y: childrenStartY + row * (DIM.cardH + DIM.vGap),
-				w: cardW,
-				h: DIM.cardH,
-			});
-		});
-
-		curX += groupW + DIM.groupGap;
+		curX += tree.width + DIM.groupGap;
 	});
 
 	// Root — centered above all sections

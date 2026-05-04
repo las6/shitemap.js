@@ -113,6 +113,8 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 	const [selectedNode, setSelectedNode] = useState(null);
 	const [open, setOpen] = useState(false);
 	const [hiddenNodes, setHiddenNodes] = useState([]);
+	const [iframeUrl, setIframeUrl] = useState(null);
+	const [iframeOpen, setIframeOpen] = useState(false);
 	const autoDetectedRef = useRef(false);
 	const needsFitViewRef = useRef(false);
 	const reactFlowInstance = useReactFlow();
@@ -199,6 +201,12 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 		history.replaceState(null, null, '');
 	};
 
+	const handleBreadcrumbClick = useCallback((node) => {
+		setSelectedNode(node);
+		history.replaceState(null, null, `#${node.id}`);
+		reactFlowInstance.fitView({ nodes: [node], padding: 0.3, maxZoom: 1.25 });
+	}, [reactFlowInstance]);
+
 	const toggleChildrenVisibility = useCallback(() => {
 		if (!selectedNode) return;
 		const getDescendants = (nodeId) => {
@@ -241,6 +249,32 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 		return map;
 	}, [selectedNode, edges]);
 
+	// Breadcrumb path from root to selected node
+	const breadcrumbs = useMemo(() => {
+		if (!selectedNode) return [];
+		const nodeMap = new Map(nodes.map((n) => [n.id, n]));
+		const path = [];
+		let currentId = selectedNode.id;
+		const visited = new Set();
+		while (currentId && !visited.has(currentId)) {
+			visited.add(currentId);
+			const node = nodeMap.get(currentId);
+			if (!node) break;
+			path.unshift(node);
+			// edges cover flat/ELK layouts; parentNode covers groups compound layout
+			const parentEdge = edges.find((e) => e.target === currentId);
+			currentId = parentEdge?.source ?? node.parentNode ?? null;
+		}
+		return path;
+	}, [selectedNode, nodes, edges]);
+
+	// While iframe is open, keep it in sync with the selected node's URL
+	useEffect(() => {
+		if (iframeOpen && selectedNode?.url) {
+			setIframeUrl(selectedNode.url);
+		}
+	}, [selectedNode, iframeOpen]);
+
 	// Nodes that have at least one directly hidden child (collapsed)
 	const collapsedNodeIds = useMemo(() => {
 		const set = new Set();
@@ -277,61 +311,103 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 	});
 
 	return (
-		<div className="layoutflow">
-			<div className="controls">
-				{ALGORITHMS.map((a) => (
-					<button
-						key={a.id}
-						className={algorithm === a.id ? 'active' : ''}
-						onClick={() => setAlgorithm(a.id)}
-					>
-						{a.label}
-					</button>
-				))}
-			</div>
-			{layouting && <div className="layout-loading">Laying out…</div>}
-		<ReactFlow
-			nodes={displayNodes}
-			edges={filteredEdges}
-			nodeTypes={nodeTypes}
-			onNodesChange={onNodesChange}
-				onEdgesChange={onEdgesChange}
-				nodesConnectable={false}
-				nodesDraggable={true}
-				onConnect={onConnect}
-				onNodeClick={handleNodeClick}
-				connectionLineType={ConnectionLineType.SmoothStep}
-				proOptions={{ hideAttribution: false }}
-				fitView
-				maxZoom={3}
-				minZoom={0.01}
-			>
-				<MiniMap zoomable pannable />
-				<Controls />
-				<Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#e0e0e0" />
-			</ReactFlow>
-			{open && selectedNode && (
-				<div className="node-details">
-					<span className="close" onClick={handleClose}>&times;</span>
-					<div className="node-details-content">
-						<h2>{selectedNode.data.label}</h2>
-						{selectedNode.url ? (
-							<a
-								href={selectedNode.url}
-								target="_blank"
-								rel="noopener noreferrer"
+		<div className="app-layout">
+			<div className="sitemap-pane">
+				<div className="layoutflow">
+					<div className="controls">
+						{ALGORITHMS.map((a) => (
+							<button
+								key={a.id}
+								className={algorithm === a.id ? 'active' : ''}
+								onClick={() => setAlgorithm(a.id)}
 							>
-								<span className="material-symbols-sharp">open_in_new</span>{' '}
-								{selectedNode.url}
-							</a>
-						) : (
-							<span className="node-path">{selectedNode.data.fullPath || selectedNode.data.label}</span>
-						)}
-						<button onClick={handleHashChange}>Center view</button>
-						<button onClick={toggleChildrenVisibility}>Toggle child pages</button>
+								{a.label}
+							</button>
+						))}
 					</div>
+					{layouting && <div className="layout-loading">Laying out…</div>}
+					<ReactFlow
+						nodes={displayNodes}
+						edges={filteredEdges}
+						nodeTypes={nodeTypes}
+						onNodesChange={onNodesChange}
+						onEdgesChange={onEdgesChange}
+						nodesConnectable={false}
+						nodesDraggable={true}
+						onConnect={onConnect}
+						onNodeClick={handleNodeClick}
+						connectionLineType={ConnectionLineType.SmoothStep}
+						proOptions={{ hideAttribution: false }}
+						fitView
+						maxZoom={3}
+						minZoom={0.01}
+					>
+						<MiniMap zoomable pannable />
+						<Controls />
+						<Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#e0e0e0" />
+					</ReactFlow>
 				</div>
-			)}
+				{open && selectedNode && (
+					<div className="node-details">
+						<span className="close" onClick={handleClose}>&times;</span>
+						<div className="node-details-content">
+							<h2>{selectedNode.data.label}</h2>
+							{breadcrumbs.length > 1 && (
+								<div className="breadcrumbs">
+									{breadcrumbs.map((n, i) => (
+										<span key={n.id}>
+											{i > 0 && <span className="breadcrumb-sep">›</span>}
+											<span
+												className={`breadcrumb-item${n.id === selectedNode.id ? ' current' : ''}`}
+												onClick={() => n.id !== selectedNode.id && handleBreadcrumbClick(n)}
+											>
+												{n.data.label}
+											</span>
+										</span>
+									))}
+								</div>
+							)}
+							{selectedNode.url ? (
+								<a href={selectedNode.url} target="_blank" rel="noopener noreferrer">
+									<span className="material-symbols-sharp">open_in_new</span>{' '}
+									{selectedNode.url}
+								</a>
+							) : (
+								<span className="node-path">{selectedNode.data.fullPath || selectedNode.data.label}</span>
+							)}
+							<button onClick={handleHashChange}>Center view</button>
+							<button onClick={toggleChildrenVisibility}>Toggle child pages</button>
+							{selectedNode.url && (
+								<button
+									className={iframeOpen ? 'active' : ''}
+									onClick={() => {
+										setIframeUrl(selectedNode.url);
+										setIframeOpen((v) => !v);
+									}}
+								>
+									{iframeOpen ? 'Close preview' : 'Preview'}
+								</button>
+							)}
+						</div>
+					</div>
+				)}
+			</div>
+			<div className={`iframe-pane${iframeOpen ? ' is-open' : ''}`}>
+				{iframeUrl && (
+					<>
+						<div className="iframe-header">
+							<span className="iframe-url" title={iframeUrl}>{iframeUrl}</span>
+							<a href={iframeUrl} target="_blank" rel="noopener noreferrer" className="iframe-btn">
+								<span className="material-symbols-sharp">open_in_new</span>
+							</a>
+							<button className="iframe-btn" onClick={() => setIframeOpen(false)}>
+								<span className="material-symbols-sharp">close</span>
+							</button>
+						</div>
+						<iframe src={iframeUrl} title="Page preview" />
+					</>
+				)}
+			</div>
 		</div>
 	);
 };
