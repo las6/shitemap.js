@@ -220,7 +220,7 @@ export function computeGroupLayout(nodes, edges) {
 				...child,
 				type: 'default',
 				className: 'node-leaf',
-				parentNode: section.id,
+				parentId: section.id,
 				extent: 'parent',
 				position: { x: localX, y: localY },
 				width: cardW,

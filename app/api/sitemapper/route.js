@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-const Sitemapper = require('sitemapper');
+import Sitemapper from 'sitemapper';
 
 	// https://wp.seantburke.com/sitemap.xml
 	// https://www.roche.fi/sitemap.xml

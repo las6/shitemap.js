@@ -2,7 +2,7 @@
 
 import ELK from "elkjs/lib/elk.bundled.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import ReactFlow, {
+import { ReactFlow,
 	MiniMap,
 	Controls,
 	ConnectionLineType,
@@ -12,9 +12,8 @@ import ReactFlow, {
 	useEdgesState,
 	addEdge,
 	useReactFlow,
-} from "reactflow";
-import "reactflow/dist/style.css";
-import "./Modal.css";
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 import "./NodeDetails.css";
 import SectionGroupNode from "./SectionGroupNode";
 import {
@@ -136,30 +135,33 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 	useEffect(() => {
 		if (!rawNodes || !rawEdges || !algorithm) return;
 
-		setLayouting(true);
-
 		const run = async () => {
-			let layoutedNodes, layoutedEdges;
-			if (algorithm === "groups") {
-				const result = computeGroupLayout(rawNodes, rawEdges);
-				layoutedNodes = result.nodes;
-				layoutedEdges = result.edges;
-			} else if (algorithm === "sections") {
-				layoutedNodes = computeSectionLayout(rawNodes, rawEdges);
-				layoutedEdges = rawEdges;
-			} else {
-				layoutedNodes = await runELKLayout(rawNodes, rawEdges, algorithm);
-				layoutedEdges = rawEdges;
+			setLayouting(true);
+			try {
+				let layoutedNodes, layoutedEdges;
+				if (algorithm === "groups") {
+					const result = computeGroupLayout(rawNodes, rawEdges);
+					layoutedNodes = result.nodes;
+					layoutedEdges = result.edges;
+				} else if (algorithm === "sections") {
+					layoutedNodes = computeSectionLayout(rawNodes, rawEdges);
+					layoutedEdges = rawEdges;
+				} else {
+					layoutedNodes = await runELKLayout(rawNodes, rawEdges, algorithm);
+					layoutedEdges = rawEdges;
+				}
+				setNodes(layoutedNodes);
+				setEdges(layoutedEdges);
+				setHiddenNodes([]);
+				needsFitViewRef.current = true;
+			} catch (err) {
+				console.error("Layout failed:", err);
+			} finally {
+				setLayouting(false);
 			}
-			setNodes(layoutedNodes);
-			setEdges(layoutedEdges);
-			setHiddenNodes([]);
-			needsFitViewRef.current = true;
 		};
 
-		run()
-			.catch((err) => console.error("Layout failed:", err))
-			.finally(() => setLayouting(false));
+		run();
 	}, [rawNodes, rawEdges, algorithm]);
 
 	// Fit view only after a fresh layout, not on every node state change (e.g. selection)
@@ -273,17 +275,13 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 			path.unshift(node);
 			// edges cover flat/ELK layouts; parentNode covers groups compound layout
 			const parentEdge = edges.find((e) => e.target === currentId);
-			currentId = parentEdge?.source ?? node.parentNode ?? null;
+			currentId = parentEdge?.source ?? node.parentId ?? null;
 		}
 		return path;
 	}, [selectedNode, nodes, edges]);
 
-	// While iframe is open, keep it in sync with the selected node's URL
-	useEffect(() => {
-		if (iframeOpen && selectedNode?.url) {
-			setIframeUrl(selectedNode.url);
-		}
-	}, [selectedNode, iframeOpen]);
+	// While iframe is open, show the selected node's URL; fall back to last known URL when closed
+	const displayIframeUrl = (iframeOpen && selectedNode?.url) ? selectedNode.url : iframeUrl;
 
 	// Nodes that have at least one directly hidden child (collapsed)
 	const collapsedNodeIds = useMemo(() => {
@@ -422,31 +420,31 @@ export const Flow = ({ rawNodes, rawEdges, site }) => {
 					</div>
 				)}
 			</div>
-			<div className={`iframe-pane${iframeOpen ? " is-open" : ""}`}>
-				{iframeUrl && (
-					<>
-						<div className="iframe-header">
-							<span className="iframe-url" title={iframeUrl}>
-								{iframeUrl}
-							</span>
-							<a
-								href={iframeUrl}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="iframe-btn"
-							>
-								<span className="material-symbols-sharp">open_in_new</span>
-							</a>
-							<button
-								className="iframe-btn"
-								onClick={() => setIframeOpen(false)}
-							>
-								<span className="close ">&times;</span>
-							</button>
-						</div>
-						<iframe src={iframeUrl} title="Page preview" />
-					</>
-				)}
+		<div className={`iframe-pane${iframeOpen ? " is-open" : ""}`}>
+			{displayIframeUrl && (
+				<>
+					<div className="iframe-header">
+						<span className="iframe-url" title={displayIframeUrl}>
+							{displayIframeUrl}
+						</span>
+						<a
+							href={displayIframeUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="iframe-btn"
+						>
+							<span className="material-symbols-sharp">open_in_new</span>
+						</a>
+						<button
+							className="iframe-btn"
+							onClick={() => setIframeOpen(false)}
+						>
+							<span className="close ">&times;</span>
+						</button>
+					</div>
+					<iframe src={displayIframeUrl} title="Page preview" />
+				</>
+			)}
 			</div>
 		</div>
 	);

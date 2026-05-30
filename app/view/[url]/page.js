@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Flow } from "../../Flow";
 import { makeInitialData } from "../../../components/helpers";
-import { ReactFlowProvider } from 'reactflow';
+import { ReactFlowProvider } from '@xyflow/react';
 
 const base64UrlDecode = (str) => {
 	return atob(str.replace(/-/g, '+').replace(/_/g, '/'));
 };
 
 const ViewPage = ({ params }) => {
+	const { url } = use(params);
 	const [rawData, setRawData] = useState(null);
-	const { url } = params;
 	const decodedUrl = base64UrlDecode(url);
 	const tmpUrl = new URL(decodedUrl);
 	const siteConfig = { url: `${tmpUrl.protocol}//${tmpUrl.host}` };
