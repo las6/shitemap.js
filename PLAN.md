@@ -1,84 +1,93 @@
-# The plan
+# Shitemap delivery plan
 
-## Status legend: [x] done, [-] partial/needs revisit, [ ] not started
+Updated October 9, 2026. Version 0.3.0. Supersedes the Groups/Flat/ELK plan; historical exploration remains in [IDEAS.md](IDEAS.md).
 
----
+Status: `[x]` implemented, `[-]` partial/pending verification, `[ ]` planned. Source status is not evidence of production deployment.
 
-## / — Intro / home view
-- [x] URL input form
-- [x] Preset sitemap buttons (Cricket Lighters, Jalostaja, Airam)
-- [ ] Upload local sitemap.xml (future)
+## Current status
 
----
+- [x] Website/domain input calls Kurkelo server-side for sitemap locations; multiple locations offer a choice. Direct XML and the bundled fixture work without discovery.
+- [x] XML syntax/root checking, index expansion, usable URL validation/deduplication, partial-child warnings, cancellation/timeouts, and retryable shared-link errors.
+- [x] Regular/Bare deterministic tree views, independent direction/detail, collections, stable collapse, search, branch focus, page details, and presentation.
+- [x] Shareable view/direction/detail parameters and selected-page hash. Links reload source data; they are not persisted snapshots of every expanded branch.
+- [x] Recursive/Doto typography, system/light/dark themes, favicons, author link, and subtle package-version labels.
+- [-] Current uncommitted appearance work adds textures, visibility, reflection contrast, isometric treatment, and optional map backgrounds. Review before release. Fuchsia controls/effects are development-only, including persisted debug preferences.
+- [x] Latest observed review checks: 82 tests, lint, and production build passed. Re-run after remaining appearance work; this is a dated observation, not a permanent test count.
+- [ ] Protected destinations, aggregate resource budgets, public API quotas, usage instrumentation, exports, and page metadata integration.
+- [ ] Deployed discovery/reload/error-path verification for the hardened release.
 
-## /view/[url] — Graph view
+## Service boundary and data flow
 
-### Data layer
-- [x] Fetch sitemap via `/api/sitemapper` (sitemapper npm package — handles sitemap index files recursively)
-- [x] Build URL tree (`makeTree`) with depth annotation on each node, short labels (last path segment only)
-- [x] Flatten tree to ReactFlow nodes + edges (`getSubSitemap`, `getSubEdgemap`)
+Browser → Shitemap `/api/discover` → Kurkelo discovery → candidate XML locations.
 
-### Layout engines (algorithm switcher in UI)
+Browser → Shitemap `/api/sitemapper` → XML/index downloads and server parsing → URL inventory JSON → browser tree construction, layout, and React Flow rendering.
 
-#### `⊞ Groups` (default) — compound node layout
-- [x] Section nodes become ReactFlow compound container nodes (`type: 'sectionGroup'`)
-- [x] Descendants placed inside with `parentNode` + local grid coordinates — no section→leaf edges
-- [x] Only root→section edges drawn
-- [x] Grid: column-first, max 6 cols, √N sizing
-- [-] **Visual result: mixed.** The containment concept is right but the overall look hasn't been validated against all three test sites yet. Needs fresh-eyes review.
+Kurkelo discovers locations and collects exact-page HTML metadata; it does not currently expand sitemap indexes into a page inventory. Shitemap owns extraction, visualization, limits, and user-facing states. Discovery results do not exempt later fetches from destination validation.
 
-#### `⊟ Flat` — section-grid layout (legacy)
-- [x] Section headers in a row, descendant cards in a wrapped grid below each
-- [x] Edges from section→leaf create messy smoothstep fans for horizontally-spread children
-- [-] **Visual result: broken for large flat sections.** Kept for comparison.
+## 1. Release hardening — Shitemap
 
-#### `→ Layered` / `↓ Layered` — ELK layered
-- [x] ELK Layered LR / TB with MULTI_EDGE wrapping
-- [-] **Visual result: broken.** Scattered nodes, phantom rectangles. Root cause not fully debugged.
+- [ ] Benchmark small, broad, deep, indexed, compressed, and oversized fixtures. Record server memory/parse time and browser inventory/layout responsiveness; bytes alone do not establish renderability.
+- [ ] Introduce a protected fetch adapter: validate initial/child/redirect URLs, public destinations, and supported ports; bind connections to validated addresses while retaining hostname-based TLS verification. Allow local fixtures only by explicit development exception.
+- [ ] Replace recursive library scheduling with a bounded traversal queue and global counters. Bound cycles, nesting, URL length, and inferred nodes too. Nested indexes must share one concurrency budget.
+- [ ] Bound streaming downloads and decompression; Content-Length is only an early check. AbortSignal cannot interrupt synchronous XML parsing: benchmark CPU separately and decide whether isolation is needed.
+- [ ] Add public API quotas with hosting controls/shared state, not process-local counters. Bound discovery request bodies and future metadata requests too.
+- [ ] Define error codes for blocked destinations, resource limits, timeout, and throttling. Preserve usable pages with incomplete-map warnings for ordinary child failures; do not silently truncate a complete-looking map.
+- [ ] Offer individual child sitemaps when an index exceeds budgets and safe candidates are available.
 
-#### `◎ Radial` — ELK radial
-- [x] ELK Radial layout
-- [-] **Visual result: untested recently.** Was the auto-detect target for flat sites.
+Provisional starting budgets, subject to benchmarks:
 
-### Variable node sizing by depth
-- [x] depth 0 (root): 200×48
-- [x] depth 1 (section): 172×40 (or sectionGroup compound node)
-- [x] depth 2+ (leaf): 150×32
+| Resource | Proposed budget | Current behavior |
+| --- | --- | --- |
+| Individual XML | 10 MiB, including decompression bounds | Implemented per document |
+| Aggregate decompressed XML | 20 MiB | Not implemented |
+| Sitemap documents | 50 | Not implemented |
+| Unique usable page URLs | 10,000 | Not implemented |
+| Concurrent XML downloads | 3 across entire traversal | Library scheduling is per index |
+| Network deadline | 45 seconds | Implemented; does not interrupt synchronous parsing/layout |
+| Nesting/generated/visible nodes | Select from benchmarks | No explicit budgets |
 
-### Visual design
-- [x] Depth-based CSS classes: `.node-root`, `.node-section`, `.node-leaf`, `.node-section-group`
-- [x] CSS variable theming (light + dark mode)
-- [x] Dot grid background
-- [x] Edge style: thin grey, highlight on hover/select
-- [x] Loading state while layout computes
-- [x] `SectionGroupNode.js` — custom node with header label bar + target handle
-- [ ] Zoom-aware label legibility (future)
-- [ ] Overall visual quality — **nothing looks great yet across all test sites**
+Acceptance: unsafe redirect/child destinations are blocked; nested indexes stay within global budgets; cyclic/oversized inputs terminate predictably; ordinary maps remain usable; completeness is explicit.
 
-### Interactivity
-- [x] Click node → details panel (link to live URL, center view, toggle children)
-- [x] Hash-based deep linking (`#nodeId` → jump to node)
-- [x] Toggle children visibility (collapse/expand subtrees)
-- [ ] Node dragging persists (resets on re-layout — future)
+## 2. Release hardening — Kurkelo (separate repository)
 
----
+See [KURKELO_HANDOFF.md](docs/KURKELO_HANDOFF.md) for API requirements and acceptance criteria.
 
-## Test sites
-| Site | URLs | Structure | Notes |
-|------|------|-----------|-------|
-| `airam.fi/page-sitemap.xml` | ~21 | Shallow, multilingual | Simple, good baseline |
-| `jalostaja.fi/sitemap_index.xml` | Multiple sections | Moderate depth | Sitemap index |
-| `cricketlighters.com/sitemap.xml` | 92 (80+ in one section) | One huge flat section | Stress test for layouts |
+- [ ] Resolve the documented DNS preflight/connection gap with an enforceable runtime-specific design.
+- [ ] Add authenticated caller quotas, shared per-domain concurrency/rate controls, cold-miss deduplication, and short failure cooldowns.
+- [ ] Define throttling/error/correlation behavior without breaking compact responses.
+- [ ] Measure API calls, collector executions, and actual upstream attempts separately, with bounded telemetry/storage costs.
 
----
+No batch collector or sitemap-inventory API is required for the first Shitemap integration. Billing activation, paid subscriptions, and deployment are not implied by this plan.
 
-## Hosting / backend
-- [ ] Deploy to Vercel
-- [ ] CORS / sitemap fetch issues on live URLs (may need proxy)
+## 3. Measurement and deployed release verification
 
----
+- [ ] Adopt [OPERATIONS.md](docs/OPERATIONS.md): begin with server outcome/duration/cache/fetch counts and a small browser completion/feature-event pilot.
+- [ ] Choose retention and a collection sink using existing platform capabilities before adding an analytics service. Measurement is best effort; authoritative quota enforcement is separate.
+- [ ] Verify deployed discovery, direct XML, indexes, Unicode/shared links, cancellation, retries, partial warnings, limits, and mobile/large-map behavior.
+- [ ] Verify server-held Kurkelo credentials and production-disabled diagnostics.
+- [ ] Re-run tests/lint/build; review browser errors and request amplification. Record deployment version and verification date.
 
-## Future / nice-to-have
-- [ ] Share URL for a specific map state
-- [ ] Edit / rename nodes, persist changes
-- [ ] Export as PNG or PDF
+Centry is the proposed small error-reporting integration, not a requirement to build a new monitoring platform before beta. Structured logs must still make unexpected service failures diagnosable.
+
+## 4. PNG/SVG export — next user-facing feature
+
+- [ ] Export the currently expanded map, independent of viewport clipping, using current view/direction and an explicit background choice.
+- [ ] Exclude controls, inspector, selection highlights, and diagnostics; decide whether subtle branding is included.
+- [ ] Preserve geometry, connectors, labels, and fonts; SVG must include required styles/assets and PNG must bound dimensions/pixel count.
+- [ ] Exclude remote metadata thumbnails initially.
+- [ ] Verify Regular/Bare, both directions, long labels, stacks, themes, collapsed branches, and large-map output.
+
+Acceptance: output matches the chosen structure, has no clipped labels/chrome, and explains raster size limits.
+
+## 5. Selected-page metadata — after export
+
+- [ ] Add a server proxy calling Kurkelo with `include: ['metadata']`, `detail: 'compact'`; never expose the bearer key.
+- [ ] Request only a selected real page, debounce changes, deduplicate work, and reuse results. Opening a graph makes zero page-metadata requests.
+- [ ] Show observed title/description/optional image and status/date in the details panel. Missing OG values and client-rendered-only tags are normal unavailable states.
+- [ ] Preserve URL-derived labels, source URL identity, and geometry initially. Inferred folders have no fetchable page.
+- [ ] Retain existing details on failure; validate links/images and provide image fallbacks. Image proxying must not introduce an unprotected fetch path.
+- [ ] Measure upstream work/cache behavior before prefetch or bulk enrichment.
+
+## Deferred
+
+Whole-map metadata, batch/jobs APIs, rendered screenshots, editing/saved snapshots, authenticated GSC/analytics joins, and metrics-driven spatial views. App usage measurement is distinct from importing a target site's analytics into its graph.

@@ -4,9 +4,13 @@
 A tool for the early stages of website refreshes or audits. It visually explores existing site structure to quickly understand the current architecture.
 
 ## MVP Requirements
-1. **Hosted Platform:** Needs to be accessible online (e.g., hosted on Vercel/Cloudflare). Must include a working backend/API to handle the actual sitemap parsing.
-2. **Improved Visualization:** The current DAG auto-layout is insufficient for flat hierarchies. Needs a more visually interesting and readable layout algorithm or design approach.
-3. **Interactivity:** Nodes in the visual graph must be collapsible/toggleable to manage large sitemaps.
+1. **Hosted Platform:** Server APIs for discovery and XML parsing are implemented. Deployed integration verification and public-service hardening remain release gates.
+2. **Improved Visualization:** Implemented with deterministic Regular/Bare tree views, collections, direction controls, and zoom-aware detail.
+3. **Interactivity:** Implemented collapse/expand, search, branch focus, page details, and presentation.
+
+## Current priorities — October 9, 2026
+
+[PLAN.md](PLAN.md) is the current delivery plan. Priorities are bounded/protected sitemap fetching, public API quotas, operational usage measurement, deployed verification, PNG/SVG export, and then selected-page metadata from Kurkelo. Whole-site unfurling is deferred. Centry is the proposed error-tracking integration; app usage and service request accounting are separate concerns. See [usage and operations](docs/OPERATIONS.md) and the [Kurkelo handoff](docs/KURKELO_HANDOFF.md).
 
 ## Future / "Nice to Have" Features
 - **Editing & Sharing:** The ability to move nodes, rename them, or modify the visualization, and then share the resulting map via a unique URL (requires persistent storage/backend).
@@ -31,6 +35,8 @@ A tool for the early stages of website refreshes or audits. It visually explores
 
 ## Layout Algorithm Research (April 2026)
 
+Historical exploration below, not the current architecture or delivery plan. References to “current” layouts and implementation recommendations describe the April research context. The active October implementation uses `components/explorer.js`; the old layout helpers are not the active view.
+
 ### The Problem
 Dagre uses the Sugiyama layered algorithm: nodes are assigned to horizontal "ranks" by depth, then positioned within each rank. On a typical corporate site with 200 pages all at `/blog/post-name` (depth 2), dagre puts every post on the same rank — producing a 200-node column that is completely unreadable at any useful zoom level.
 
@@ -40,7 +46,7 @@ The fundamental constraint: **do nodes at the same depth have to be on the same 
 
 ### Algorithm Options
 
-#### 1. Dagre (current) — `dagrejs/dagre`
+#### 1. Dagre (April baseline) — `dagrejs/dagre`
 **How it works:** Sugiyama layered layout. Each node gets a rank = path depth. Nodes in the same rank are distributed along the perpendicular axis with crossing minimization.
 
 **Why it fails for sitemaps:**

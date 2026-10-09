@@ -2,6 +2,12 @@
 
 Visual sitemap explorer by [las6](https://las6.net). Enter a domain, website URL, or sitemap XML URL to get an interactive graph. Website entries use Kurkelo to find sitemap locations; multiple locations offer a choice. Sitemaps are checked for usable page URLs before opening the graph.
 
+## Status and next steps
+
+As of October 9, 2026, the app is version 0.3.0. Domain discovery, validated sitemap loading, Regular/Bare exploration, search, page details, presentation, and shareable view settings are implemented. Destination protection, operation-wide resource budgets, and public API quotas remain release-hardening work; passing local checks does not establish production readiness.
+
+See [PLAN.md](PLAN.md) for implementation status, release gates, and the sequence: hardening and basic operational measurement → deployed verification → PNG/SVG export → selected-page metadata. [Kurkelo API handoff](docs/KURKELO_HANDOFF.md) records the separate service requirements. [Usage and operations](docs/OPERATIONS.md) proposes request/usage measurement across Shitemap, Kurkelo, and ADvisor, with Centry for errors. These plans are not implemented integrations.
+
 ## Setup
 
 ```bash
@@ -23,7 +29,7 @@ Discovery and sitemap loading use a fullscreen bitmap-font status view, with can
 
 - Next.js 16 (App Router)
 - @xyflow/react (React Flow v12)
-- ELK.js for graph layout
+- Deterministic tree layout in `components/explorer.js` (ELK.js remains installed for legacy layout code)
 - Sitemapper for sitemap fetching
 
 ## Exploring a map
@@ -41,6 +47,8 @@ Discovery and sitemap loading use a fullscreen bitmap-font status view, with can
 - Collapse keeps the parent position and camera stable. Later siblings reflow into the space freed by the branch. Fit and search navigation are explicit camera operations.
 - Search opens from its icon or Cmd/Ctrl+K; arrow keys and Enter navigate results. Map settings hold view, direction and detail; Appearance holds theme and background controls. Zoom stays in the lower-right corner.
 - Presentation hides all chrome, including the wordmark. Escape exits; the lower-right exit button also appears on hover or keyboard focus.
+- Text uses Recursive; bitmap wordmarks and anchor lettering use Doto. Inter is no longer loaded.
+- Current appearance work adds stored texture, visibility, reflection contrast, and isometric settings, with optional map backgrounds. Fuchsia diagnostics and their rendering effect are development-only, including when a saved debug preference exists. This work is currently uncommitted and should be reviewed before release.
 
 Background choices are shared between the landing page and map and saved locally. Appearance offers grain and circuitry, visibility and reflection contrast, and isometric circuitry. Map backgrounds are opt-in. Fuchsia pattern inspection is available in development. Reflections follow the pointer with broad lighting fields and respect reduced motion.
 
