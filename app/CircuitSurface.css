@@ -17,11 +17,11 @@
 
 .circuit-surface-finish {
   /* Width of one original image. The seamless tile contains four reflections. */
-  --circuit-pattern-size: clamp(200px, 20vw, 300px);
+  --circuit-pattern-size: calc( clamp(200px, 20vw, 300px) * var(--reflection-scalar, 1));
   position: absolute;
   inset: -12%;
   transform: rotateX(var(--circuit-tilt)) rotateZ(var(--circuit-turn));
-  mask: url('/textures/circuitry-original-mask.svg?v=5') center / calc(var(--circuit-pattern-size) * 2) auto repeat;
+  mask: url('/textures/circuitry-seamless.svg?v=1') center / calc(var(--circuit-pattern-size) * 2) auto repeat;
 }
 
 .circuit-surface-light {

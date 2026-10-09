@@ -1,4 +1,4 @@
-export const BACKGROUND_DEFAULTS = Object.freeze({ texture: 'circuit', mapEnabled: false, visibility: 100, contrast: 35, isometric: false, debug: false });
+export const BACKGROUND_DEFAULTS = Object.freeze({ texture: 'circuit', mapEnabled: false, visibility: 100, contrast: 35, scalar: 1, isometric: true, debug: false });
 const KEY = 'shitemap-background';
 const EVENT = 'shitemap-background-change';
 let cachedRaw;
@@ -10,7 +10,8 @@ export function normalizeBackground(value = {}) {
     mapEnabled: value.mapEnabled === true,
     visibility: Number.isFinite(value.visibility) ? Math.max(0, Math.min(200, value.visibility)) : 100,
     contrast: Number.isFinite(value.contrast) ? Math.max(0, Math.min(100, value.contrast)) : 35,
-    isometric: value.isometric === true,
+    scalar: Number.isFinite(value.scalar) ? Math.max(0.1, Math.min(10, value.scalar)) : 1,
+    isometric: typeof value.isometric === 'boolean' ? value.isometric : BACKGROUND_DEFAULTS.isometric,
     debug: value.debug === true,
   };
 }

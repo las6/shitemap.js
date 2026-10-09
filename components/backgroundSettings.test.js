@@ -4,7 +4,8 @@ import { BACKGROUND_DEFAULTS, normalizeBackground } from './backgroundSettings';
 describe('background preferences', () => {
   it('keeps the map clear by default and preserves explicit experiment choices', () => {
     expect(normalizeBackground()).toEqual(BACKGROUND_DEFAULTS);
-    expect(normalizeBackground({ texture: 'grain', mapEnabled: true, visibility: 150, contrast: 35, isometric: true, debug: true })).toEqual({ texture: 'grain', mapEnabled: true, visibility: 150, contrast: 35, isometric: true, debug: true });
+    expect(normalizeBackground({ texture: 'grain', mapEnabled: true, visibility: 150, contrast: 35, isometric: true, debug: true })).toEqual({ texture: 'grain', mapEnabled: true, visibility: 150, contrast: 35, scalar: 1, isometric: true, debug: true });
+    expect(normalizeBackground({ isometric: false }).isometric).toBe(false);
   });
   it('sanitizes persisted values and bounds intensity', () => {
     expect(normalizeBackground({ texture: 'unknown', mapEnabled: 'true', visibility: -10 })).toEqual({ ...BACKGROUND_DEFAULTS, visibility: 0 });
@@ -13,5 +14,8 @@ describe('background preferences', () => {
     expect(normalizeBackground({ contrast: 999 }).contrast).toBe(100);
     expect(normalizeBackground({ contrast: -1 }).contrast).toBe(0);
     expect(normalizeBackground({ contrast: 'bright' }).contrast).toBe(35);
+    expect(normalizeBackground({ scalar: 999 }).scalar).toBe(10);
+    expect(normalizeBackground({ scalar: -1 }).scalar).toBe(0.1);
+    expect(normalizeBackground({ scalar: 'large' }).scalar).toBe(1);
   });
 });
