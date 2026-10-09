@@ -36,3 +36,8 @@
 .canvas-zoom-level span { color: var(--explorer-muted); font-size: 11px; margin-left: 2px; }
 .explorer .presentation-exit { display: flex; gap: 8px; align-items: center; bottom: 30px; }
 @media(max-width:600px) { .canvas-actions { top: 14px; right: 14px; } .canvas-zoom { bottom: 26px; right: 14px; } .explorer .canvas-tool { width: 34px; height: 36px; } }
+
+.explorer .export-download { display: block; width: 100%; margin: 16px 0 8px; padding: 10px; border: 1px solid var(--explorer-border); border-radius: 7px; background: var(--explorer-soft); }
+.explorer .export-download:disabled { cursor: wait; opacity: .6; }
+.canvas-settings fieldset:disabled { opacity: .6; }
+@media(max-width:650px) { .explorer .explorer-site { max-width: calc(100% - 280px); } }

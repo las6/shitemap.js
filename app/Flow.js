@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import CanvasControls from './CanvasControls';
+import ExportControls from './ExportControls';
 import CircuitSurface from './CircuitSurface';
 import PageDetails from './PageDetails';
 import useViewSettings from './useViewSettings';
@@ -161,7 +162,8 @@ export const Flow = ({ rawNodes, rawEdges, site, warnings = [] }) => {
         onMode={value => updateSetting('mode', value)} onDirection={value => updateSetting('direction', value)} onDetail={value => updateSetting('detail', value)} zoom={zoom}
         onZoomIn={() => instance.zoomIn({ duration: 150 })} onZoomOut={() => instance.zoomOut({ duration: 150 })}
         onFit={() => instance.fitView({ padding: mapPadding, maxZoom: 1, duration: 250 })}
-        query={query} onQuery={setQuery} matches={matches} onReveal={reveal} />
+        query={query} onQuery={setQuery} matches={matches} onReveal={reveal}
+        exportContent={<ExportControls getRoot={() => canvas.current.closest('.explorer')} site={site.url} />} />
       <div className="layoutflow">
         <ReactFlow nodes={nodes} edges={layout.edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodesConnectable={false} nodesDraggable={false}
           edgesFocusable={false} zoomOnDoubleClick={false} onNodeDoubleClick={(_, node) => { if (node.type === 'page') centerPage(node.id); }} onNodeClick={(_, node) => { if (node.type === 'page') reveal(node.id, false); }}

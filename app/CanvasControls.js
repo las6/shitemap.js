@@ -17,7 +17,7 @@ function ToolButton({ icon, label, ...props }) {
   return <button className="canvas-tool" type="button" aria-label={label} title={label} {...props}><Icon name={icon} /></button>;
 }
 
-export default function CanvasControls({ presentation, setPresentation, mode, direction, detail, onMode, onDirection, onDetail, zoom, onZoomIn, onZoomOut, onFit, query, onQuery, matches, onReveal }) {
+export default function CanvasControls({ presentation, setPresentation, mode, direction, detail, onMode, onDirection, onDetail, zoom, onZoomIn, onZoomOut, onFit, query, onQuery, matches, onReveal, exportContent }) {
   const [panel, setPanel] = useState(null);
   const [active, setActive] = useState(0);
   const panelRef = useRef(null);
@@ -25,6 +25,7 @@ export default function CanvasControls({ presentation, setPresentation, mode, di
   const searchButton = useRef(null);
   const mapButton = useRef(null);
   const appearanceButton = useRef(null);
+  const exportButton = useRef(null);
   const values = { mode, direction, detail };
   const setters = { mode: onMode, direction: onDirection, detail: onDetail };
   const results = matches.slice(0, 30);
@@ -34,7 +35,7 @@ export default function CanvasControls({ presentation, setPresentation, mode, di
 
   useEffect(() => {
     if (panel === 'search') inputRef.current?.focus();
-    if (['map', 'appearance'].includes(panel)) panelRef.current?.querySelector('button')?.focus();
+    if (['map', 'appearance', 'export'].includes(panel)) panelRef.current?.querySelector('button')?.focus();
   }, [panel]);
 
   useEffect(() => {
@@ -56,6 +57,7 @@ export default function CanvasControls({ presentation, setPresentation, mode, di
         if (panel === 'map') mapButton.current?.focus();
         if (panel === 'appearance') appearanceButton.current?.focus();
         if (panel === 'search') searchButton.current?.focus();
+        if (panel === 'export') exportButton.current?.focus();
       }
     };
     const outside = event => {
@@ -76,14 +78,15 @@ export default function CanvasControls({ presentation, setPresentation, mode, di
         <ToolButton icon="sun" label="Appearance settings" ref={appearanceButton} aria-expanded={panel === 'appearance'} aria-controls="canvas-settings" onClick={() => setPanel('appearance')} />
         <span className="canvas-divider" />
         <ToolButton icon="scan" label="Fit map" onClick={onFit} />
+        <ToolButton icon="download" label="Export map" ref={exportButton} aria-expanded={panel === 'export'} aria-controls="canvas-settings" onClick={() => setPanel(panel === 'export' ? null : 'export')} />
         <ToolButton icon="monitor" label="Presentation" onClick={() => { close(); setPresentation(true); }} />
       </div>
-      {['map', 'appearance'].includes(panel) && <div id="canvas-settings" ref={panelRef} className="canvas-panel canvas-settings" role="region" aria-label={panel === 'map' ? 'Map settings' : 'Appearance settings'}>
-        <div className="canvas-panel-heading canvas-settings-heading"><span>{panel === 'map' ? 'Map' : 'Appearance'}</span><ToolButton icon="x" label={`Close ${panel} settings`} onClick={() => { close(); (panel === 'map' ? mapButton : appearanceButton).current?.focus(); }} /></div>
+      {['map', 'appearance', 'export'].includes(panel) && <div id="canvas-settings" ref={panelRef} className="canvas-panel canvas-settings" role="region" aria-label={panel === 'map' ? 'Map settings' : panel === 'export' ? 'Export map' : 'Appearance settings'}>
+        <div className="canvas-panel-heading canvas-settings-heading"><span>{panel === 'map' ? 'Map' : panel === 'export' ? 'Export' : 'Appearance'}</span><ToolButton icon="x" label={`Close ${panel} settings`} onClick={() => { close(); (panel === 'map' ? mapButton : panel === 'export' ? exportButton : appearanceButton).current?.focus(); }} /></div>
         {panel === 'map' ? <>
           {OPTIONS.map(option => <fieldset key={option.key}><legend><Icon name={option.icon} size={14} />{option.label}</legend><div className="canvas-segments">{option.choices.map(([value, label]) => <button type="button" key={value} aria-pressed={values[option.key] === value} onClick={() => setters[option.key](value)}>{label}</button>)}</div></fieldset>)}
           <p>Auto reveals page paths as you zoom in.</p>
-        </> : <><ThemeControl /><BackgroundControls /></>}
+        </> : panel === 'export' ? exportContent : <><ThemeControl /><BackgroundControls /></>}
       </div>}
       {panel === 'search' && <div id="canvas-search" className="canvas-panel canvas-search" ref={panelRef}>
         <div className="canvas-search-input"><Icon name="search" /><input ref={inputRef} type="search" aria-label="Find a page" placeholder="Find a page…" value={query} onChange={event => { onQuery(event.target.value); setActive(0); }} role="combobox" aria-expanded="true" aria-autocomplete="list" aria-activedescendant={results[active] && query.trim() ? `page-match-${active}` : undefined} aria-controls="page-search-results" onKeyDown={event => {
