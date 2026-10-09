@@ -1,6 +1,6 @@
 # Expansion and export performance — October 9, 2026
 
-Implemented in local source; the live 0.4.1 release still has 12-child batches and per-character export measurement. Selected-page Kurkelo metadata follows these improvements; keyboard navigation/safe zones and the copy shortcut follow metadata. Favicon exploration is independent polish.
+Implemented in local source; the previously verified live 0.4.1 release has 12-child batches and per-character export measurement. Selected-page Kurkelo metadata follows these improvements; keyboard navigation/safe zones and the copy shortcut follow metadata. Favicon exploration is independent polish.
 
 ## Expansion
 
@@ -12,7 +12,7 @@ Export previously used a DOM Range rectangle for every UTF-16 character and grou
 
 Pretext's published npm package `@chenglou/pretext` **0.0.9** was trialed outside the project's dependencies. Its cached canvas preparation and arithmetic line layout are promising, especially for repeated layouts. The trial used `prepareWithSegments`/`layoutWithLines`, loaded fonts, matching font weight/size/family, width and line height, and CSS `overflow-wrap: anywhere`. One narrow Arabic case wrapped differently from the DOM; raw collapsed-whitespace samples also returned differently normalized line text. These observations concern this package version and trial, not every Pretext release or its general accuracy. [API documentation](https://github.com/chenglou/pretext#readme).
 
-Retain native browser wrapping for this change. No dependency, speculative PNG preparation, image cache, lower-resolution mode, or clipboard shortcut was added. Both download and clipboard paths share the improvement.
+Copy performance is accepted and further optimization is deferred. The Arabic mismatch does not dismiss Pretext for predominantly English names/URLs; keep it as an option if measurement becomes a bottleneck. Retain native browser wrapping for this change. No dependency, speculative PNG preparation, image cache, lower-resolution mode, or clipboard shortcut was added. Both download and clipboard paths share the improvement.
 
 ## Local evidence
 
@@ -26,4 +26,4 @@ Development-only console records `Map export timing` (readiness, measurement, re
 
 Expansion tests cover 20/30/50 children in both views/directions, preserved nested collapse, 51-child remainder, and 300-child batching. An isolated committed-baseline snapshot plus these changes passed **148 tests, lint, and a production webpack build**. The build retained the existing package-version named-import warning in Wordmark. The shared working tree's concurrent background preference work had two failing assertions during review; those changes were excluded from the isolated check.
 
-Temporary browser benchmark assets were removed from `public` before completion. Raw results and review assets remain in ignored `output/release-review/`. Safari/Firefox, physical devices, larger real maps and hosted smoke checks remain future verification; the current release was not redeployed.
+Temporary browser benchmark assets were removed from `public` before completion. Raw results and review assets remain in ignored `output/release-review/`. Safari/Firefox, physical devices, larger real maps and hosted smoke checks remain future verification; These changes are included in source version 0.4.2 for the next Git-triggered Vercel deployment.

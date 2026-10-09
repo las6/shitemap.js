@@ -1,6 +1,6 @@
 # Release verification — October 9, 2026
 
-Live release: **0.4.1** at [shitemap.las6.net](https://shitemap.las6.net), with the deployed hardening and quota evidence in [HARDENING.md](HARDENING.md). PNG/SVG export and image clipboard copying are deployed. Concurrent uncommitted appearance/connector work remains separate.
+Last separately verified live release: **0.4.1** at [shitemap.las6.net](https://shitemap.las6.net), with the deployed hardening and quota evidence in [HARDENING.md](HARDENING.md). PNG/SVG export and image clipboard copying are deployed. Concurrent uncommitted appearance/connector work remains separate.
 
 ## Completed checks
 
@@ -41,3 +41,7 @@ Implemented locally, pending release: 50-child expansion batches and faster nati
 On October 9, committed snapshot `da2b4ae` (including export `7e273ed` and clipboard `1aca33f`) passed 145 tests, lint and production build independently of uncommitted UI work, then passed the hosted Vercel build. Deployment `dpl_8wdbPwpRL6tWSms4pzqDe959w4DT`: [immutable release](https://shitemap-1q75raeoo-dqcomms.vercel.app). Promoted to [shitemap.las6.net](https://shitemap.las6.net).
 
 Hosted smoke checks: version 0.4.1 visible; protected fetching loaded the deployed 104-page example; PNG downloaded at 3,890 × 1,652; SVG downloaded at 1,945 × 826 with embedded fonts; Copy image reported the expected PNG dimensions. Kurkelo discovery returned Vite's sitemap and link-local metadata targets returned HTTP 422 `blocked_destination`. The existing shared quota remains active. No billing, plan, credential, or quota-policy changes were made for this release.
+
+## 0.4.2 Git-triggered release
+
+Source 0.4.2 includes 50-child expansion, faster native export text measurement, seamless reflected circuitry assets, and consistent isometric defaults with a development-only scale control. The complete working tree passed 148 tests, lint, and a production Turbopack build. Main pushes use the existing Vercel Git integration; no separate CLI deployment is required. Hosted 0.4.2 smoke verification remains pending. See [EXPORT_PERFORMANCE.md](EXPORT_PERFORMANCE.md) for export evidence and future Pretext consideration.

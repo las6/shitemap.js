@@ -1,6 +1,6 @@
 # Shitemap delivery plan
 
-Updated October 9, 2026. Live version 0.4.1; local source includes subsequent connector refinements and the work below. Browser/export evidence is in [VERIFICATION.md](docs/VERIFICATION.md). Supersedes the Groups/Flat/ELK plan; historical exploration remains in [IDEAS.md](IDEAS.md). Implemented hardening and deployment requirements are in [HARDENING.md](docs/HARDENING.md).
+Updated October 9, 2026. Source version 0.4.2; the last separately verified live release is 0.4.1. Main pushes trigger the existing Vercel deployment integration. Browser/export evidence is in [VERIFICATION.md](docs/VERIFICATION.md). Supersedes the Groups/Flat/ELK plan; historical exploration remains in [IDEAS.md](IDEAS.md). Implemented hardening and deployment requirements are in [HARDENING.md](docs/HARDENING.md).
 
 Status: `[x]` implemented, `[-]` partial/pending verification, `[ ]` planned. Source status is not evidence of production deployment.
 
@@ -104,7 +104,8 @@ Acceptance: output matches the chosen structure, has no clipped labels/chrome, a
 - [x] Local source: reveal all immediate children for sections of up to 50 children in one expansion; larger sections reveal 50 at a time. Preserve deeper collapse state and existing root behavior.
 - [x] Local source: replace per-character export reads with whole-line reads and binary searches for wrapped boundaries. Benchmark Pretext 0.0.9; retain native measurement for browser wrapping fidelity. Development-only phase timings separate readiness, measurement, encoding and clipboard completion. See [EXPORT_PERFORMANCE.md](docs/EXPORT_PERFORMANCE.md); no eager rendering, PNG cache or extra quality controls added.
 - [x] Tests cover 20/30/50-child sections, the 51-child boundary, larger remainder counts and nested collapse in Regular/Bare and both directions. Local browser confirms a 17-page collection opens fully in one click; image copy and SVG download succeed. Broader device checks remain.
-- [ ] Version bump, deploy and hosted smoke-check these local improvements when the next release is requested.
+- [x] Source bumped to 0.4.2 for the main push, including seamless circuitry and consistent isometric defaults. Deployment uses Vercel Git integration.
+- [ ] Smoke-check the automatic hosted release.
 
 Next: selected-page metadata, then coherent keyboard tree navigation with safe-zone camera following, then a canvas-scoped copy shortcut. Favicon exploration is independent polish. Whole-branch recursive expansion remains deferred.
 
