@@ -1,30 +1,24 @@
 import { NextResponse } from 'next/server';
-import Sitemapper from 'sitemapper';
-
-	// https://wp.seantburke.com/sitemap.xml
-	// https://www.roche.fi/sitemap.xml
-	// https://oi.fi/page-sitemap.xml
-	// https://staging.hideoutvillas.com/sitemap.xml
-	// https://www.vaasan.fi/sitemap.xml
-	// https://www.cricketlighters.com/sitemap.xml
+import { ValidatedSitemapper } from '../../../components/sitemapServer';
+import { normalizeSiteInput, validateSitemapData } from '../../../components/sitemapInput';
 
 export async function GET(request) {
 	const { searchParams } = request.nextUrl;
-	const url = searchParams.get('url');
-	if (!url) {
-		return NextResponse.json({ error: "URL parameter is required" }, { status: 400 });
+	let url;
+	try {
+		url = normalizeSiteInput(searchParams.get('url'));
+	} catch (error) {
+		return NextResponse.json({ error: error.message }, { status: 400 });
 	}
-	console.log('URL', url);
-
-	const sitemap = new Sitemapper();
-	const res2 = await sitemap.fetch(url);
-	const response = NextResponse.json(res2);
-
-	// Set Cache-Control header to use Vercel's caching
-	response.headers.set('Cache-Control', 's-maxage=86400, stale-while-revalidate');
-
-	// Set revalidate property to control ISR caching
-	response.revalidate = 86400; // Revalidate every 24 hours
-
-	return response;
+	try {
+		const sitemap = new ValidatedSitemapper({ signal: AbortSignal.any([request.signal, AbortSignal.timeout(45000)]) });
+		const data = await sitemap.fetch(url);
+		if (data.errors?.length && !data.sites?.length) {
+			return NextResponse.json({ error: 'This URL could not be loaded as a sitemap. Check the URL or try again later.' }, { status: 422 });
+		}
+		const validated = validateSitemapData(data);
+		return NextResponse.json(validated, { headers: { 'Cache-Control': new URL(url).search || validated.warnings.length ? 'no-store' : 's-maxage=86400, stale-while-revalidate' } });
+	} catch (error) {
+		return NextResponse.json({ error: error.message || 'The sitemap could not be loaded. Try again.' }, { status: 422 });
+	}
 }
