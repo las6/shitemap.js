@@ -1,3 +1,5 @@
+import { writePngClipboard } from './clipboardImage';
+
 // Export a measured map as native SVG geometry/text or bounded canvas PNG.
 export const EXPORT_LIMITS = { nodes: 2000, text: 300000, side: 8192, pixels: 16000000, padding: 48 };
 export const xml = value => String(value).toWellFormed().replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]/g, '\ufffd').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' })[char]);
@@ -129,16 +131,25 @@ async function mapPng(map, background) {
   return new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('This map could not be rasterized. Try SVG instead.')), 'image/png'));
 }
 
-export async function downloadMap(root, site, { format, background }) {
+async function renderMap(root, { format, background }) {
   await document.fonts.ready;
   // Let font/branch measurement and React Flow handle updates settle first.
   await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   // Read geometry synchronously: subsequent async font work cannot change this snapshot.
   const map = measureMap(root);
   const blob = format === 'svg' ? new Blob([mapSvg(map, background, await embeddedFonts(new Set(map.texts.map(text => text.family))))], { type: 'image/svg+xml' }) : await mapPng(map, background);
-  const url = URL.createObjectURL(blob), anchor = document.createElement('a');
-  anchor.href = url; anchor.download = exportFilename(site, format); anchor.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
   const size = exportSize(map.bounds, format);
-  return { width: format === 'png' ? size.pixelWidth : size.width, height: format === 'png' ? size.pixelHeight : size.height, reduced: size.scale < 1 };
+  return { blob, width: format === 'png' ? size.pixelWidth : size.width, height: format === 'png' ? size.pixelHeight : size.height, reduced: size.scale < 1 };
+}
+
+export async function downloadMap(root, site, options) {
+  const { blob, ...size } = await renderMap(root, options);
+  const url = URL.createObjectURL(blob), anchor = document.createElement('a');
+  anchor.href = url; anchor.download = exportFilename(site, options.format); anchor.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return size;
+}
+
+export function copyMap(root, { background }) {
+  return writePngClipboard(() => renderMap(root, { format: 'png', background }));
 }

@@ -41,3 +41,6 @@
 .explorer .export-download:disabled { cursor: wait; opacity: .6; }
 .canvas-settings fieldset:disabled { opacity: .6; }
 @media(max-width:650px) { .explorer .explorer-site { max-width: calc(100% - 280px); } }
+
+.export-actions { display: flex; gap: 8px; }
+.export-actions .export-download { flex: 1; width: auto; }

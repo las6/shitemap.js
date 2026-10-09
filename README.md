@@ -78,3 +78,5 @@ Run the synthetic capacity fixtures separately with `pnpm exec vitest run script
 ## Exporting a map (source 0.4.0)
 
 Open **Export map** in the map toolbar, choose PNG or SVG, and select a solid current-theme background or transparency. Export includes the current expanded map beyond the viewport; it omits controls, inspector, highlights, and decorative backgrounds. PNG scales the whole map to at most 8,192 pixels per side and 16 megapixels. Choose SVG for large maps; its native vector text and geometry include embedded fonts. Exports support up to 2,000 displayed nodes; collapse branches if prompted.
+
+For a quick paste, use **Copy image** in the same panel. It copies PNG using the chosen background, even when SVG is selected for download. If clipboard access is unavailable or blocked, the panel gives download guidance.
