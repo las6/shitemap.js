@@ -1,6 +1,6 @@
 # Shitemap delivery plan
 
-Updated October 9, 2026. Source version 0.4.0; live version 0.3.1. Browser/export evidence is in [VERIFICATION.md](docs/VERIFICATION.md). Supersedes the Groups/Flat/ELK plan; historical exploration remains in [IDEAS.md](IDEAS.md). Implemented hardening and deployment requirements are in [HARDENING.md](docs/HARDENING.md).
+Updated October 9, 2026. Source/live version 0.4.1. Browser/export evidence is in [VERIFICATION.md](docs/VERIFICATION.md). Supersedes the Groups/Flat/ELK plan; historical exploration remains in [IDEAS.md](IDEAS.md). Implemented hardening and deployment requirements are in [HARDENING.md](docs/HARDENING.md).
 
 Status: `[x]` implemented, `[-]` partial/pending verification, `[ ]` planned. Source status is not evidence of production deployment.
 
@@ -15,7 +15,7 @@ Status: `[x]` implemented, `[-]` partial/pending verification, `[ ]` planned. So
 - [x] The deployed hardening snapshot passed 137 tests, lint, local production build, and hosted build on October 9. Concurrent uncommitted appearance changes were excluded; they need their own final verification.
 - [x] Protected sitemap destinations, aggregate XML/document/page/node budgets, bounded parsing structure, and a global index traversal queue.
 - [x] Shared Vercel quota guard and live `shitemap-api` rule verified: 20 calls/minute per client-IP key per region, shared across APIs. No in-memory fallback allows unguarded production calls.
-- [x] PNG/native SVG export is implemented in source 0.4.0 and verified locally; not yet deployed.
+- [x] PNG/native SVG export and image clipboard copying are deployed in 0.4.1; hosted example and actual export/copy smoke checks passed.
 - [ ] Usage instrumentation and page metadata integration.
 - [-] Hosted hardening build, discovery, direct XML, blocked destinations, and shared 429/retry behavior verified. Hosted shared-link reload/search and local synthetic browser capacity checks completed; cross-browser/device and hosting load checks remain.
 
@@ -25,7 +25,7 @@ Keep the current single Shitemap allowance of 20 API executions/minute/IP. Separ
 
 A dedicated Shitemap Kurkelo credential is agreed in principle but not provisioned. The current legacy key still works and shares its allowance with other consumers. Arrange that migration with Kurkelo when its key setup is ready.
 
-Focused browser/shared-link and synthetic capacity review plus PNG/SVG export are complete in source; review/deploy 0.4.0 and check real devices/hosting capacity. Selected-page unfurling follows export. Basic operational measurement can grow alongside these; a new analytics platform or Centry integration is not a beta prerequisite.
+Focused browser/shared-link and synthetic capacity review plus PNG/SVG export are complete in source; 0.4.1 is deployed; check real devices/hosting capacity. Selected-page unfurling follows export. Basic operational measurement can grow alongside these; a new analytics platform or Centry integration is not a beta prerequisite.
 
 ## Service boundary and data flow
 
@@ -87,14 +87,15 @@ No batch collector or sitemap-inventory API is required for the first Shitemap i
 
 Centry is the proposed small error-reporting integration, not a requirement to build a new monitoring platform before beta. Structured logs must still make unexpected service failures diagnosable.
 
-## 4. PNG/SVG export — implemented in source 0.4.0
+## 4. PNG/SVG export and image clipboard — deployed 0.4.1
 
 - [x] Export the currently expanded map beyond viewport clipping, with current view/direction/detail and solid-theme/transparent background choice.
 - [x] Exclude controls, inspector, highlights, diagnostics, textures and branding.
 - [x] Native SVG geometry/text embeds local fonts; PNG uses the loaded fonts and caps dimensions/pixel count. Export work is bounded; see VERIFICATION.md.
 - [x] Exclude remote metadata thumbnails.
 - [x] Local downloads verified for Regular/Bare, both directions, long/Unicode labels, stacks, themes, collapsed branches and large-map output.
-- [ ] Deploy 0.4.0 after review and verify real devices/other browsers.
+- [x] Deploy 0.4.1 and smoke-check PNG, SVG, and clipboard copying.
+- [ ] Verify real devices/other browsers.
 
 Acceptance: output matches the chosen structure, has no clipped labels/chrome, and explains raster size limits.
 

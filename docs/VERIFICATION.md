@@ -1,6 +1,6 @@
 # Release verification — October 9, 2026
 
-Live: **0.3.1** at [shitemap.las6.net](https://shitemap.las6.net), with the deployed hardening and quota evidence in [HARDENING.md](HARDENING.md). Source: **0.4.0**, adding PNG/SVG export; not yet deployed. Concurrent uncommitted appearance/connector work remains separate.
+Live/source: **0.4.1** at [shitemap.las6.net](https://shitemap.las6.net), with the deployed hardening and quota evidence in [HARDENING.md](HARDENING.md). PNG/SVG export and image clipboard copying are deployed. Concurrent uncommitted appearance/connector work remains separate.
 
 ## Completed checks
 
@@ -31,8 +31,13 @@ PNG starts at 2× resolution, reduces the whole image when necessary, and caps e
 ## Remaining verification
 
 - Safari/Firefox and physical iOS/Android devices; vector-editor font compatibility.
-- Hosted 0.4.0 deployment and actual-download smoke checks after review.
 - Hosting memory/concurrency measurements and extreme interactive expansion; no service-wide capacity guarantee is asserted.
 - Full browser partial-index/retry cases remain broader coverage work; server/API tests already cover bounded traversal, partial warnings, candidates, and errors.
 
 Next user-facing feature: selected-page metadata from Kurkelo. Keep the current single API allowance initially and arrange a dedicated Shitemap credential when Kurkelo provisioning is ready; no additional quota-policy layer is planned.
+
+## 0.4.1 deployment evidence
+
+On October 9, committed snapshot `da2b4ae` (including export `7e273ed` and clipboard `1aca33f`) passed 145 tests, lint and production build independently of uncommitted UI work, then passed the hosted Vercel build. Deployment `dpl_8wdbPwpRL6tWSms4pzqDe959w4DT`: [immutable release](https://shitemap-1q75raeoo-dqcomms.vercel.app). Promoted to [shitemap.las6.net](https://shitemap.las6.net).
+
+Hosted smoke checks: version 0.4.1 visible; protected fetching loaded the deployed 104-page example; PNG downloaded at 3,890 × 1,652; SVG downloaded at 1,945 × 826 with embedded fonts; Copy image reported the expected PNG dimensions. Kurkelo discovery returned Vite's sitemap and link-local metadata targets returned HTTP 422 `blocked_destination`. The existing shared quota remains active. No billing, plan, credential, or quota-policy changes were made for this release.

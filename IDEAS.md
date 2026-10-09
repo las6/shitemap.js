@@ -10,7 +10,7 @@ A tool for the early stages of website refreshes or audits. It visually explores
 
 ## Current priorities — October 9, 2026
 
-[PLAN.md](PLAN.md) is the current delivery plan. Fetching protection and public API quotas are delivered. Focused browser verification and PNG/SVG export are complete in source 0.4.0; deployment and cross-browser/device checks remain. Selected-page metadata from Kurkelo follows, with basic operational measurement added incrementally. Whole-site unfurling is deferred. Centry is the proposed error-tracking integration; app usage and service request accounting are separate concerns. See [usage and operations](docs/OPERATIONS.md) and the [Kurkelo handoff](docs/KURKELO_HANDOFF.md).
+[PLAN.md](PLAN.md) is the current delivery plan. Fetching protection and public API quotas are delivered. Focused browser verification, PNG/SVG export, and image clipboard copying are deployed in 0.4.1; cross-browser/device and hosting load checks remain. Selected-page metadata from Kurkelo follows, with basic operational measurement added incrementally. Whole-site unfurling is deferred. Centry is the proposed error-tracking integration; app usage and service request accounting are separate concerns. See [usage and operations](docs/OPERATIONS.md) and the [Kurkelo handoff](docs/KURKELO_HANDOFF.md).
 
 ## Future / "Nice to Have" Features
 - **Editing & Sharing:** The ability to move nodes, rename them, or modify the visualization, and then share the resulting map via a unique URL (requires persistent storage/backend).

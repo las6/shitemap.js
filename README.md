@@ -4,7 +4,7 @@ Visual sitemap explorer by [las6](https://las6.net). Enter a domain, website URL
 
 ## Status and next steps
 
-As of October 9, 2026, the public app is version 0.3.1; source 0.4.0 adds locally verified PNG/SVG export and awaits deployment. Domain discovery, bounded sitemap loading, Regular/Bare exploration, search, page details, presentation, and shareable view settings are implemented. Sitemap fetching now pins connections to validated public addresses and enforces operation-wide budgets. Both APIs have a fail-closed Vercel quota guard; the rule is published and shared throttling, discovery, public XML, and blocked destinations were verified on the deployed release. Functional browser capacity/shared-link checks are recorded in [VERIFICATION.md](docs/VERIFICATION.md); cross-browser/device and hosting load checks remain. See [hardening and deployment](docs/HARDENING.md).
+As of October 9, 2026, the public app is version 0.4.1, including PNG/SVG export and image clipboard copying. Domain discovery, bounded sitemap loading, Regular/Bare exploration, search, page details, presentation, and shareable view settings are implemented. Sitemap fetching now pins connections to validated public addresses and enforces operation-wide budgets. Both APIs have a fail-closed Vercel quota guard; the rule is published and shared throttling, discovery, public XML, and blocked destinations were verified on the deployed release. Functional browser capacity/shared-link checks are recorded in [VERIFICATION.md](docs/VERIFICATION.md); cross-browser/device and hosting load checks remain. See [hardening and deployment](docs/HARDENING.md).
 
 See [PLAN.md](PLAN.md) for implementation status, release gates, and the sequence: hardening and basic operational measurement → deployed verification → PNG/SVG export → selected-page metadata. [Kurkelo API handoff](docs/KURKELO_HANDOFF.md) records the separate service requirements. [Usage and operations](docs/OPERATIONS.md) proposes request/usage measurement across Shitemap, Kurkelo, and ADvisor, with Centry for errors. These plans are not implemented integrations.
 
@@ -75,7 +75,7 @@ Run `pnpm test`, `pnpm lint`, and `pnpm build` after changes. The build download
 
 Run the synthetic capacity fixtures separately with `pnpm exec vitest run scripts/benchmark-sitemaps.test.js`; measurements are written to ignored `output/hardening/benchmarks.json`. They measure Node parsing/tree/layout, not browser rendering. Production API calls require a configured Vercel Firewall rule; development bypasses the external quota service and can read only the bundled local fixture, not arbitrary private URLs.
 
-## Exporting a map (source 0.4.0)
+## Exporting a map
 
 Open **Export map** in the map toolbar, choose PNG or SVG, and select a solid current-theme background or transparency. Export includes the current expanded map beyond the viewport; it omits controls, inspector, highlights, and decorative backgrounds. PNG scales the whole map to at most 8,192 pixels per side and 16 megapixels. Choose SVG for large maps; its native vector text and geometry include embedded fonts. Exports support up to 2,000 displayed nodes; collapse branches if prompted.
 
