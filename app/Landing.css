@@ -55,7 +55,7 @@
 .sample-stack::after { inset: 8px -8px -8px 8px; z-index: -2; }
 .sample-stack { border: 0; padding: 0; background: transparent; }
 .sample-stack > span { display: flex; align-items: center; width: 100%; height: 100%; border: 1px solid var(--explorer-border); border-radius: inherit; background: var(--explorer-soft); padding: 0 12px; }
-.landing-demo { display: flex; width: fit-content; margin: 16px auto 0; color: var(--explorer-text); }
+.landing-demo { display: flex; width: fit-content; margin: 16px 0 0 28.52%; color: var(--explorer-text); }
 @media(max-width:800px) {
   .landing { padding: 22px 6vw; }
   .landing-content { padding: 45px 0; }

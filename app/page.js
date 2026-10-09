@@ -26,7 +26,7 @@ function SampleMap() {
     <span className="sample-node sample-furniture">Furniture</span>
     <span className="sample-node sample-lighting">Lighting</span>
     <span className="sample-node sample-blog">Blog</span>
-    <span className="sample-node sample-stack"><span>60 other pages</span></span>
+    <span className="sample-node sample-stack"><span>60 more pages</span></span>
     <span className="sample-node sample-about">About</span>
   </div>;
 }

@@ -32,6 +32,17 @@ describe('sitemap explorer', () => {
       }
     }
   });
+  it('keeps Bare vertical children beyond the parent label centre at every depth', () => {
+    const tree = fixture(['/', '/products', '/products/a-long-category-name', '/products/a-long-category-name/item', '/blog', '/blog/post']);
+    for (const collapsed of [new Set(), initialCollapsed(tree)]) {
+      const result = explorerLayout(tree, collapsed, 1.8, new Map(), { mode: 'bare', direction: 'vertical' });
+      for (const edge of result.edges.filter(edge => !edge.data.fan)) {
+        const parent = result.nodes.find(node => node.id === edge.source);
+        const child = result.nodes.find(node => node.id === edge.target);
+        expect(child.position.x).toBeGreaterThanOrEqual(parent.position.x + parent.width / 2 + 16 * 1.8);
+      }
+    }
+  });
   it('formats URL-derived names while preserving acronyms and authored casing', () => {
     expect(displayLabel('our-products')).toBe('Our products');
     expect(displayLabel('faq')).toBe('FAQ');

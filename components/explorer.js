@@ -94,7 +94,7 @@ export function explorerLayout(tree, collapsed, scale = 1, limits = new Map(), o
     const root = !tree.parent.has(id), label = root ? 'Home' : displayLabel(raw.data.label);
     const dims = dimensions(label, scale, kids.length > 0, root, bare);
     nodes.push({ ...raw, type: 'page', position: { x, y }, ...dims, style: dims,
-      data: { ...raw.data, displayLabel: label, isSiteRoot: root, childCount: kids.length, collapsed: collapsed.has(id) } });
+      data: { ...raw.data, displayLabel: label, isSiteRoot: root, isTopLevel: tree.parent.has(id) && !tree.parent.has(tree.parent.get(id)), childCount: kids.length, collapsed: collapsed.has(id) } });
     if (root && !horizontal && !collapsed.has(id) && kids.length) {
       const rootNode = nodes[nodes.length - 1];
       let nextX = x, maxHeight = 0;
@@ -110,15 +110,18 @@ export function explorerLayout(tree, collapsed, scale = 1, limits = new Map(), o
       return { width, height: dims.height + gap + maxHeight };
     }
     let width = dims.width, height = dims.height, offset = 0;
-    const childX = horizontal ? x + dims.width + gap : x + 32 * scale;
+    // Reserve clearance beyond the widest possible label centre so the straight
+    // Bare stem cannot pass through a child, even when labels wrap or fonts load.
+    const indent = bare ? dims.width / 2 + 16 * scale : 32 * scale;
+    const childX = horizontal ? x + dims.width + gap : x + indent;
     const childY = horizontal ? y : y + dims.height + siblingGap;
     const connect = target => edges.push({ id: `${id}->${target}`, source: id, target, type: 'treePath',
       sourceHandle: horizontal ? 'right' : 'branch', targetHandle: 'left',
-      data: { horizontal, spineX: horizontal ? childX - gap / 2 : childX - 16 * scale } });
+      data: { horizontal, bareBranch: bare && !horizontal, spineX: horizontal ? childX - gap / 2 : childX - 16 * scale } });
     const addStack = (hidden, remaining) => {
       const descendants = hidden.flatMap(kid => [kid, ...descendantIds(tree, kid)]);
       const pageCount = descendants.filter(kid => tree.byId.get(kid).url).length;
-      const label = `${pageCount} ${remaining ? 'other' : 'hidden'} ${pageCount === 1 ? 'page' : 'pages'}`;
+      const label = `${pageCount} more ${pageCount === 1 ? 'page' : 'pages'}`;
       const stackId = `stack:${id}`, size = dimensions(label, scale, false, false, bare);
       nodes.push({ id: stackId, type: 'stack', position: { x: childX, y: childY + offset }, ...size, style: size,
         data: { label, parentId: id, pageCount, remaining, nextCount: Math.min(M.batchSize, hidden.length), childCount: hidden.length, branchCount: descendants.length } });

@@ -10,16 +10,17 @@ import useViewSettings from './useViewSettings';
 import Wordmark from '../components/Wordmark';
 import { pageFocus } from '../components/pageFocus';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ReactFlow, useReactFlow, useViewport } from '@xyflow/react';
+import { ReactFlow, useReactFlow, useStore } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './Explorer.css';
 import './ExplorerTheme.css';
 import { EXPLORER_METRICS as M } from '../components/explorerStyle';
-import { PageNode, StackNode, TreePath } from './SitemapNodes';
+import { NodeMeasurementProvider, PageNode, StackNode, TreePath } from './SitemapNodes';
 import { indexTree, initialCollapsed, ancestorIds, descendantIds, explorerLayout, displayLabel } from '../components/explorer';
 
 const nodeTypes = { page: PageNode, stack: StackNode };
 const edgeTypes = { treePath: TreePath };
+const selectZoom = state => state.transform[2];
 const mapPadding = { top: '95px', bottom: '100px', left: '40px', right: '40px' };
 
 export const Flow = ({ rawNodes, rawEdges, site, warnings = [] }) => {
@@ -31,7 +32,7 @@ export const Flow = ({ rawNodes, rawEdges, site, warnings = [] }) => {
   const [{ mode, direction, detail }, updateSetting] = useViewSettings();
   const [query, setQuery] = useState('');
   const instance = useReactFlow();
-  const { zoom } = useViewport();
+  const zoom = useStore(selectZoom);
   const initialFit = useRef(false);
   const canvas = useRef(null);
   const focusRequest = useRef(null);
@@ -140,12 +141,14 @@ export const Flow = ({ rawNodes, rawEdges, site, warnings = [] }) => {
 
   const inspection = detail === 'inspection' || (detail === 'auto' && zoom >= M.inspectionZoom);
   const highlighted = useMemo(() => new Set(selectedId && tree.parent.has(selectedId) ? descendantIds(tree, selectedId) : []), [tree, selectedId]);
-  const nodes = layout.nodes.map(node => ({ ...node,
+  const selectPage = useCallback(id => reveal(id, false), [reveal]);
+  const nodes = useMemo(() => layout.nodes.map(node => ({ ...node,
     selected: node.id === selectedId,
     className: highlighted.has(node.id) || (node.type === 'stack' && ((node.data.parentId === selectedId && tree.parent.has(selectedId)) || highlighted.has(node.data.parentId))) ? 'branch-highlight' : '',
-    data: { ...node.data, url: node.url, onToggle: toggle, onShowMore: showMore, readability: scale, mode, inspection, onSelect: id => reveal(id, false), onCenter: centerPage,
+    data: { ...node.data, url: node.url, onToggle: toggle, onShowMore: showMore, readability: scale, mode, direction, inspection, onSelect: selectPage, onCenter: centerPage,
       path: node.url ? new URL(node.url).pathname : node.data.fullPath,
-      parentLabel: tree.byId.get(node.data.parentId)?.data.label } }));
+      parentLabel: tree.byId.get(node.data.parentId)?.data.label } })),
+  [layout.nodes, selectedId, highlighted, toggle, showMore, scale, mode, direction, inspection, selectPage, centerPage, tree]);
   const ancestors = selected ? ancestorIds(tree, selectedId).reverse().map(id => tree.byId.get(id)) : [];
   const matches = query.trim() ? rawNodes.filter(node => `${node.data.label} ${node.url || node.data.fullPath}`.toLowerCase().includes(query.trim().toLowerCase())) : [];
 
@@ -165,12 +168,12 @@ export const Flow = ({ rawNodes, rawEdges, site, warnings = [] }) => {
         query={query} onQuery={setQuery} matches={matches} onReveal={reveal}
         exportContent={<ExportControls getRoot={() => canvas.current.closest('.explorer')} site={site.url} />} />
       <div className="layoutflow">
-        <ReactFlow nodes={nodes} edges={layout.edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodesConnectable={false} nodesDraggable={false}
+        <NodeMeasurementProvider><ReactFlow nodes={nodes} edges={layout.edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodesConnectable={false} nodesDraggable={false}
           edgesFocusable={false} zoomOnDoubleClick={false} onNodeDoubleClick={(_, node) => { if (node.type === 'page') centerPage(node.id); }} onNodeClick={(_, node) => { if (node.type === 'page') reveal(node.id, false); }}
           onPaneClick={() => { setSelectedId(null); history.replaceState(history.state, '', window.location.pathname + window.location.search); }}
           minZoom={0.02} maxZoom={2} proOptions={{ hideAttribution: false }}>
 
-        </ReactFlow>
+        </ReactFlow></NodeMeasurementProvider>
       </div>
       {!presentation && selected && <PageDetails page={selected} isRoot={!tree.parent.has(selectedId)} ancestors={ancestors}
         childCount={tree.children.get(selectedId)?.length || 0} collapsed={collapsed.has(selectedId)}

@@ -1,21 +1,51 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { createContext, memo, useContext, useEffect, useLayoutEffect, useRef } from 'react';
 import { EXPLORER_METRICS as M } from '../components/explorerStyle';
 import { BaseEdge, Handle, Position, useUpdateNodeInternals } from '@xyflow/react';
 
-function usePortMetrics(id, data) {
+// Coalesce all connector refreshes into one React Flow update per frame.
+// Read label geometry for every node before writing any CSS, avoiding reflows
+// between individual nodes. Scope queues to each map's update function.
+const PortUpdateContext = createContext(null);
+export function NodeMeasurementProvider({ children }) {
   const update = useUpdateNodeInternals();
-  useEffect(() => { update(id); }, [id, data.readability, data.mode, data.inspection, update]);
+  return <PortUpdateContext.Provider value={update}>{children}</PortUpdateContext.Provider>;
 }
-function Ports({ readability }) {
-  const row = M.anchorY * readability;
+const measurementQueues = new WeakMap();
+function queueMeasurement(id, update, measure) {
+  let queue = measurementQueues.get(update);
+  if (!queue) {
+    queue = new Map();
+    measurementQueues.set(update, queue);
+    requestAnimationFrame(() => {
+      measurementQueues.delete(update);
+      const writes = [...queue.values()].map(read => read?.()).filter(Boolean);
+      writes.forEach(write => write());
+      if (queue.size) update([...queue.keys()]);
+    });
+  }
+  queue.set(id, measure || queue.get(id));
+}
+function usePortMetrics(id, data) {
+  const update = useContext(PortUpdateContext);
+  useEffect(() => { queueMeasurement(id, update); }, [id, data.mode, data.direction, data.childCount, data.collapsed, update]);
+}
+function Ports({ data }) {
+  const row = M.anchorY * data.readability;
+  const horizontal = data.direction === 'horizontal';
+  const fan = !horizontal && data.isSiteRoot && !data.collapsed;
+  const bareBranch = data.mode === 'bare' && !horizontal;
+  // Every hidden handle is still measured by React Flow. Keep only the ports
+  // used by this node's incoming edge and current branch direction.
   return <>
-    <Handle id="top" type="target" position={Position.Top} />
-    <Handle id="left" type="target" position={Position.Left} style={{ top: row }} />
-    <Handle id="right" type="source" position={Position.Right} style={{ top: row }} />
-    <Handle id="bottom" type="source" position={Position.Bottom} />
-    <Handle id="branch" type="source" position={Position.Left} style={{ top: row }} />
+    {!data.isSiteRoot && (horizontal || !data.isTopLevel
+      ? <Handle id="left" type="target" position={Position.Left} style={{ top: row }} />
+      : <Handle id="top" type="target" position={Position.Top} />)}
+    {data.childCount > 0 && (horizontal
+      ? <Handle id="right" type="source" position={Position.Right} style={{ top: row }} />
+      : fan ? <Handle id="bottom" type="source" position={Position.Bottom} />
+        : <Handle id="branch" type="source" position={bareBranch ? Position.Bottom : Position.Left} style={bareBranch ? { left: 'calc(var(--label-center) * 1px)' } : { top: row }} />)}
   </>;
 }
 // Bare parent labels toggle on a single click. Delay that action briefly so
@@ -52,34 +82,43 @@ function usePageActivation(id, data) {
     },
   };
 }
-export function PageNode({ id, data }) {
+export const PageNode = memo(function PageNode({ id, data }) {
   usePortMetrics(id, data);
   const card = useRef(null);
-  const update = useUpdateNodeInternals();
+  const currentData = useRef(data);
+  useLayoutEffect(() => { currentData.current = data; }, [data]);
+  const update = useContext(PortUpdateContext);
   useEffect(() => {
     if (data.mode !== 'bare') return;
     const element = card.current;
+    let disposed = false;
     const measure = () => {
+      if (disposed) return;
       const range = document.createRange();
       range.selectNodeContents(element.querySelector('.sitemap-node-label'));
       const first = range.getClientRects()[0];
       if (!first) return;
       // DOM measurements include canvas zoom; convert back to node coordinates.
-      const zoom = element.getBoundingClientRect().width / element.offsetWidth;
-      element.style.setProperty('--label-width', (first.right - element.getBoundingClientRect().left) / zoom + 6 * data.readability);
-      element.style.setProperty('--label-center', ((first.left + first.right) / 2 - element.getBoundingClientRect().left) / zoom);
-      update(id);
+      const bounds = element.getBoundingClientRect();
+      const zoom = bounds.width / element.offsetWidth;
+      const width = (first.right - bounds.left) / zoom + 6 * currentData.current.readability;
+      const center = ((first.left + first.right) / 2 - bounds.left) / zoom;
+      return () => {
+        element.style.setProperty('--label-width', width);
+        element.style.setProperty('--label-center', center);
+      };
     };
-    const observer = new ResizeObserver(measure);
+    const schedule = () => queueMeasurement(id, update, measure);
+    const observer = new ResizeObserver(schedule);
     observer.observe(element);
-    document.fonts.ready.then(measure);
-    return () => observer.disconnect();
-  }, [id, data.mode, data.readability, data.inspection, update]);
+    document.fonts.ready.then(schedule);
+    return () => { disposed = true; observer.disconnect(); };
+  }, [id, data.mode, data.displayLabel, update]);
   const activation = usePageActivation(id, data);
   const bare = data.mode === 'bare';
   const toggleLabel = `${data.collapsed ? 'Expand' : 'Collapse'} ${data.displayLabel} children`;
   return <div ref={card} className={`sitemap-card ${data.isSiteRoot ? 'sitemap-root' : ''} ${!data.url ? 'sitemap-folder' : ''}`}>
-    <Ports readability={data.readability} />
+    <Ports data={data} />
     <button className="node-copy nodrag nopan" type="button"
       aria-label={bare && data.childCount ? toggleLabel : `Select ${data.displayLabel}`}
       aria-expanded={bare && data.childCount ? !data.collapsed : undefined}
@@ -93,8 +132,8 @@ export function PageNode({ id, data }) {
       <span aria-hidden="true">{data.collapsed ? '▸' : '▾'}</span><span>{data.childCount}</span>
     </button>}
   </div>;
-}
-export function StackNode({ id, data }) {
+});
+export const StackNode = memo(function StackNode({ id, data }) {
   usePortMetrics(id, data);
   return <div className="sitemap-stack">
     <Handle id="left" type="target" position={Position.Left} style={{ top: M.anchorY * data.readability }} />
@@ -106,9 +145,11 @@ export function StackNode({ id, data }) {
       {data.inspection && data.mode !== 'bare' && <span className="sitemap-node-path">{data.remaining ? `Show next ${data.nextCount}` : 'Expand branch'}</span>}
     </button>
   </div>;
-}
+});
 export function TreePath({ id, sourceX, sourceY, targetX, targetY, data }) {
   if (data.fan) return <BaseEdge id={id} path={`M ${sourceX} ${sourceY} V ${data.spineY} H ${targetX} V ${targetY}`} />;
+  // Bare vertical branches continue straight below the visible label centre.
+  if (data.bareBranch) return <BaseEdge id={id} path={`M ${sourceX} ${sourceY} V ${targetY} H ${targetX}`} />;
   const y = Math.abs(sourceY - targetY) < .5 ? sourceY : targetY;
   return <BaseEdge id={id} path={`M ${sourceX} ${sourceY} H ${data.spineX} V ${y} H ${targetX}`} />;
 }
