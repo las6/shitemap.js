@@ -5,7 +5,7 @@ import { Flow } from "../../Flow";
 import { makeInitialData } from "../../../components/helpers";
 import { ReactFlowProvider } from '@xyflow/react';
 import Link from 'next/link';
-import { decodeSitemapUrl, normalizeSiteInput } from '../../../components/sitemapInput';
+import { decodeSitemapUrl, encodeSitemapUrl, normalizeSiteInput } from '../../../components/sitemapInput';
 import { loadSitemap } from '../../../components/sitemapClient';
 import SitemapLoading from '../../SitemapLoading';
 import '../../ExplorerTheme.css';
@@ -29,7 +29,7 @@ const ViewPage = ({ params }) => {
 				if (!initialNodes.length) throw new Error('This sitemap has no pages to display.');
 				if (!signal.aborted) setResult({ source: decodedUrl, attempt, nodes: initialNodes, edges: initialEdges, site: { url: new URL(data.sites[0]).origin }, warnings: data.warnings });
 			} catch (error) {
-				if (!controller.signal.aborted) setResult({ source: decodedUrl, attempt, error: error.name === 'TimeoutError' ? 'Loading this sitemap took too long. Try again.' : error instanceof TypeError || error instanceof SyntaxError ? 'We could not reach the sitemap service. Try again.' : error.message });
+				if (!controller.signal.aborted) setResult({ source: decodedUrl, attempt, candidates: error.candidates, error: error.name === 'TimeoutError' ? 'Loading this sitemap took too long. Try again.' : error instanceof TypeError || error instanceof SyntaxError ? 'We could not reach the sitemap service. Try again.' : error.message });
 			}
 		};
 		fetchData();
@@ -38,7 +38,7 @@ const ViewPage = ({ params }) => {
 
 	const current = result?.source === decodedUrl && result?.attempt === attempt ? result : null;
 	if (!decodedUrl || current?.error) {
-		return <div className="explorer view-status"><div><h1>We couldn’t open this sitemap</h1><p role="alert">{decodedUrl ? current.error : 'This sitemap link is invalid. Enter a website to start again.'}</p><div className="view-status-actions">{decodedUrl && <button onClick={() => setAttempt(value => value + 1)}>Try again</button>}<Link href="/">Try another website</Link></div></div></div>;
+		return <div className="explorer view-status"><div><h1>We couldn’t open this sitemap</h1><p role="alert">{decodedUrl ? current.error : 'This sitemap link is invalid. Enter a website to start again.'}</p><div className="view-status-actions">{decodedUrl && <button onClick={() => setAttempt(value => value + 1)}>Try again</button>}<Link href="/">Try another website</Link></div>{current?.candidates?.length > 0 && <div className="view-status-children"><p>Try an individual child sitemap:</p><ul>{current.candidates.map(value => <li key={value}><Link href={`/view/${encodeSitemapUrl(value)}`}>{new URL(value).hostname}{new URL(value).pathname}</Link></li>)}</ul></div>}</div></div>;
 	}
 	if (!current) return <SitemapLoading />;
 

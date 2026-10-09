@@ -72,6 +72,7 @@ export default function HomePage() {
       await loadSitemap(sitemapUrl, signal);
       if (!signal.aborted) startOpening(() => router.push(`/view/${encodeSitemapUrl(sitemapUrl)}`));
     } catch (error) {
+      if (!controller.signal.aborted && Array.isArray(error.candidates)) setChoices(error.candidates);
       if (!controller.signal.aborted) setError(error.name === 'TimeoutError' ? 'This is taking too long. Try again or use another sitemap URL.' : error instanceof TypeError || error instanceof SyntaxError ? 'We could not reach the sitemap service. Try again.' : error.message);
     } finally {
       pending.current = null;
@@ -94,7 +95,7 @@ export default function HomePage() {
             <p className="landing-hint" id="sitemap-hint">A domain, a URL, or a sitemap. We’ll find the pages.</p>
             <div id="sitemap-feedback" aria-live="polite" aria-atomic="true">{error && <p className="landing-error" role="alert">{error}</p>}</div>
           </form>
-          {choices.length > 0 && <div className="landing-choices" aria-label="Choose a sitemap"><p>We found {choices.length} sitemaps. Choose one to explore.</p>{choices.map(location => <button key={location} disabled={busy} onClick={() => openMap(location, true)}><span>{new URL(location).host}{new URL(location).pathname}{new URL(location).search}</span><Icon name="arrow-right" size={18} /></button>)}</div>}
+          {choices.length > 0 && <div className="landing-choices" aria-label="Choose a sitemap"><p>{error ? 'Try an individual child sitemap.' : `We found ${choices.length} sitemaps. Choose one to explore.`}</p>{choices.map(location => <button key={location} disabled={busy} onClick={() => openMap(location, true)}><span>{new URL(location).host}{new URL(location).pathname}{new URL(location).search}</span><Icon name="arrow-right" size={18} /></button>)}</div>}
           {discovery && (discovery.status === 'partial' || discovery.stale) && <p className="landing-discovery-note">{discovery.status === 'partial' ? 'Some sitemap locations could not be checked. ' : ''}{discovery.stale ? 'Using an earlier discovery result. ' : ''}{discovery.observedAt && <>Last checked <time dateTime={discovery.observedAt}>{new Date(discovery.observedAt).toLocaleDateString()}</time>.</>}</p>}
           <div className="landing-examples"><span>Try a real site</span><div>{PRESETS.map(preset => <button key={preset.url} disabled={busy} onClick={() => { updateInput(preset.url); openMap(preset.url); }}><span className="landing-example-name">{preset.label}<Icon name="arrow-up-right" size={13} /></span><span className="landing-example-description">{preset.description}</span></button>)}</div></div>
         </section>

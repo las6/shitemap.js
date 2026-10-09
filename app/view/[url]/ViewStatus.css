@@ -6,3 +6,6 @@
 .view-status-actions button { cursor: pointer; padding: 12px 18px; border: 0; border-radius: 4px; font: inherit; background: var(--explorer-root); color: var(--explorer-root-text); }
 .view-status-actions a { text-decoration: underline; text-underline-offset: 4px; }
 .view-status-actions :focus-visible { outline: 2px solid var(--explorer-accent); outline-offset: 4px; }
+.view-status-children { margin-top: 24px; max-height: 240px; overflow: auto; overflow-wrap: anywhere; }
+.view-status-children li { margin: 8px 0; }
+.view-status-children a { text-decoration: underline; }

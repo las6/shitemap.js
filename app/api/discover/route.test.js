@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { POST } from './route';
 
 const request = target => new Request('http://localhost/api/discover', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ target }) });
+vi.mock('../../../components/apiQuota', () => ({ enforceApiQuota: vi.fn(async () => {}) }));
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
 describe('Kurkelo discovery integration', () => {
@@ -43,5 +44,33 @@ describe('Kurkelo discovery integration', () => {
     vi.stubEnv('KURKELO_URL', 'https://discovery.example.com');
     vi.stubGlobal('fetch', vi.fn(async () => Response.json({ site: { status: { sitemaps: { status: 'blocked' } } } })));
     expect(await (await POST(request('example.com'))).json()).toEqual({ locations: [], discovery: { status: 'blocked' } });
+  });
+  it('bounds discovery request bodies before calling Kurkelo', async () => {
+    const fetcher = vi.fn(); vi.stubGlobal('fetch', fetcher);
+    const response = await POST(request('a'.repeat(5000)));
+    expect(response.status).toBe(413);
+    expect((await response.json()).code).toBe('request_byte_limit');
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+  it('does not follow a Kurkelo redirect carrying the service credential', async () => {
+    vi.stubEnv('KURKELO_URL', 'https://discovery.example.com');
+    const fetcher = vi.fn(async () => { throw new TypeError('redirect refused'); }); vi.stubGlobal('fetch', fetcher);
+    expect((await POST(request('example.com'))).status).toBe(502);
+    expect(fetcher.mock.calls[0][1].redirect).toBe('error');
+  });
+  it('preserves upstream quota responses and retry guidance', async () => {
+    vi.stubEnv('KURKELO_URL', 'https://discovery.example.com');
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(null, { status: 429, headers: { 'retry-after': '20' } })));
+    const response = await POST(request('example.com'));
+    expect(response.status).toBe(429);
+    expect(response.headers.get('retry-after')).toBe('20');
+    expect((await response.json()).code).toBe('discovery_rate_limited');
+  });
+  it('bounds service response size and does not expose private diagnostics', async () => {
+    vi.stubEnv('KURKELO_URL', 'https://discovery.example.com');
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('x'.repeat(300000))));
+    const response = await POST(request('example.com'));
+    expect(response.status).toBe(413);
+    expect((await response.json()).code).toBe('discovery_response_limit');
   });
 });
