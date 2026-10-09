@@ -109,11 +109,33 @@ describe('sitemap explorer', () => {
     const tree = fixture(['/', '/blog', ...Array.from({ length: 300 }, (_, i) => `/blog/article-${i}`)]);
     const blog = find(tree, 'blog');
     const first = explorerLayout(tree, new Set());
-    expect(first.nodes.filter(node => node.url?.includes('/blog/article-'))).toHaveLength(12);
-    expect(first.nodes.find(node => node.type === 'stack').data.pageCount).toBe(288);
-    const next = explorerLayout(tree, new Set(), 1, new Map([[blog, 24]]));
-    expect(next.nodes.filter(node => node.url?.includes('/blog/article-'))).toHaveLength(24);
-    expect(next.nodes.find(node => node.type === 'stack').data.pageCount).toBe(276);
+    expect(first.nodes.filter(node => node.url?.includes('/blog/article-'))).toHaveLength(50);
+    expect(first.nodes.find(node => node.type === 'stack').data.pageCount).toBe(250);
+    const next = explorerLayout(tree, new Set(), 1, new Map([[blog, 100]]));
+    expect(next.nodes.filter(node => node.url?.includes('/blog/article-'))).toHaveLength(100);
+    expect(next.nodes.find(node => node.type === 'stack').data.pageCount).toBe(200);
+  });
+  it('reveals ordinary sections in one expansion while preserving nested collapse', () => {
+    for (const count of [20, 30, 50]) {
+      const tree = fixture(['/', '/blog', ...Array.from({ length: count }, (_, i) => `/blog/article-${i}`), '/blog/article-0/detail']);
+      const blog = find(tree, 'blog'), article = find(tree, 'article-0');
+      const collapsed = initialCollapsed(tree);
+      collapsed.delete(blog);
+      for (const mode of ['regular', 'bare']) for (const direction of ['horizontal', 'vertical']) {
+        const result = explorerLayout(tree, collapsed, 1.8, new Map(), { mode, direction });
+        expect(result.nodes.filter(node => tree.parent.get(node.id) === blog)).toHaveLength(count);
+        expect(result.nodes.some(node => node.id === `stack:${blog}`)).toBe(false);
+        expect(result.nodes.some(node => node.id === `stack:${article}`)).toBe(true);
+        expect(result.nodes.some(node => node.id === find(tree, 'detail'))).toBe(false);
+      }
+    }
+  });
+  it('shows a final short remainder accurately at the batch boundary', () => {
+    const tree = fixture(['/', '/blog', ...Array.from({ length: 51 }, (_, i) => `/blog/article-${i}`)]);
+    const blog = find(tree, 'blog');
+    const result = explorerLayout(tree, new Set());
+    expect(result.nodes.find(node => node.id === `stack:${blog}`).data).toMatchObject({ pageCount: 1, nextCount: 1, remaining: true });
+    expect(explorerLayout(tree, new Set(), 1, new Map([[blog, 100]])).nodes.some(node => node.type === 'stack')).toBe(false);
   });
   it('keeps the home page expanded in the initial overview', () => {
     const tree = fixture(['/', '/a', '/b', '/c', '/d', '/e']);
