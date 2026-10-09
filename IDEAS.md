@@ -11,6 +11,21 @@ A tool for the early stages of website refreshes or audits. It visually explores
 ## Future / "Nice to Have" Features
 - **Editing & Sharing:** The ability to move nodes, rename them, or modify the visualization, and then share the resulting map via a unique URL (requires persistent storage/backend).
 - **Benchmark/Inspiration:** octopus.do, but the goal is to be simpler and more heavily focused on visual impact.
+- **Metrics-driven spatial view (follow up later):** Reuse the Search Console / analytics integration ideas to add page-level traffic or search-performance data. Spatial size or height should encode an explicitly labeled metric and time period, giving isometric or volume maps a purpose beyond decoration. Keep this separate from the structural sitemap views; no integration work is planned yet.
+
+## Visual exploration decisions (October 2026)
+
+- **Approved baseline:** Regular + Bare exploration accepted on October 8, 2026. Review artifact: `/Users/lauri/.codex/visualizations/2026/10/08/01a11a47-55a3-7152-8b2e-ce4a5e03d3fe/shitemap-regular-and-bare.html`. This is the approved reference. The app now implements Regular and Bare with shared theme tokens, geometry settings, independent direction and detail controls, and stable collapse behavior.
+- Regular is the primary view: compact rounded cards, Recursive page titles, a dark Home node with larger white bitmap type, inline expand/count controls, and three-layer collection stacks. No redundant root badge or vertically stacked controls.
+- Preserve overview/inspection differences: overview prioritizes titles and structure; inspection adds paths and larger text. Keep presentation controls hideable for client screenshots.
+- Bare uses a stable first text row shared by ordinary pages and collection stacks. Snap nearly aligned parent/first-child anchors without changing hierarchy. Collapse must not shift Home or the toggled parent; subsequent siblings may reflow as a branch contracts. This was verified with zero-pixel Home/parent movement at overview and inspection scales.
+- Treat layout modes and visual identity as separate decisions. Tree and Route can share a theme; Bare is an optional simplified view, not the default.
+- Direction is independent of theme and toggleable in every view. Prefer left-to-right by default. Bare uses visible text bounds for connectors and node geometry, with straight spines that stop at the last child; avoid inheriting invisible card dimensions or adding short stepped bends.
+- Bare should use readable labels and precise branching lines, without persistent chevrons, child counts, card surfaces, or left-border selection/hover highlights. Keep interaction minimal and keyboard accessible.
+- Recursive is an acceptable working typeface, not a final brand decision. Soft blocks remains a possible secondary theme; Printer’s proof is discarded.
+- Larger bitmap type can still work as white text on dark root/anchor nodes in the more visual views. Avoid bitmap page titles at small sizes or in grey on white.
+- Keep visual nodes compact: omit redundant labels such as “Site root”; place any expand control and count side by side rather than stacking them vertically.
+- Preserve compact three-layer collection stacks and explicit hidden-page counts. Connectors must terminate at actual visible children, including after collapse or collection expansion; no spine should extend past the final child.
 
 ---
 

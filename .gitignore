@@ -34,3 +34,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env*
+!.env.example
+
+# Local previews, screenshots, and generated review artifacts
+/output/

@@ -1,0 +1,5 @@
+output/
+.env*
+.vercel/
+.next/
+node_modules/
