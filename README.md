@@ -39,8 +39,10 @@ Discovery and sitemap loading use a fullscreen bitmap-font status view, with can
 - Detail defaults to Auto: overview retains titles and counts, while close inspection reveals paths. Overview and Inspection can also be selected explicitly. Labels and borders compensate for overview zoom.
 - Double-click or double-tap to focus a page: gentle zoom toward 100%, with a capped offset toward up to three nearest visible children or collection stacks. Existing close zoom and collapsed branches are preserved. The details panel offers a clear external page link and a branch toggle.
 - Collapse keeps the parent position and camera stable. Later siblings reflow into the space freed by the branch. Fit and search navigation are explicit camera operations.
-- Search opens from its icon or Cmd/Ctrl+K; arrow keys and Enter navigate results. View, direction and detail live in the settings popover. Zoom stays in the lower-right corner.
+- Search opens from its icon or Cmd/Ctrl+K; arrow keys and Enter navigate results. Map settings hold view, direction and detail; Appearance holds theme and background controls. Zoom stays in the lower-right corner.
 - Presentation hides all chrome, including the wordmark. Escape exits; the lower-right exit button also appears on hover or keyboard focus.
+
+Background choices are shared between the landing page and map and saved locally. Appearance offers grain and circuitry, visibility and reflection contrast, and isometric circuitry. Map backgrounds are opt-in. Fuchsia pattern inspection is available in development. Reflections follow the pointer with broad lighting fields and respect reduced motion.
 
 ## Changing the visual design
 

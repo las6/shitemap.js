@@ -5,14 +5,17 @@
 .explorer .canvas-tool:hover, .explorer .canvas-tool[aria-expanded='true'] { color: var(--explorer-text); background: var(--explorer-soft); }
 .canvas-divider { width: 1px; height: 18px; background: var(--explorer-border); margin: 0 3px; opacity: .5; }
 .canvas-panel { position: absolute; right: 0; top: 54px; border: 1px solid var(--explorer-border); background: var(--explorer-card); border-radius: 12px; box-shadow: 0 8px 28px #0000000c; width: min(340px, calc(100vw - 32px)); }
-.canvas-settings { padding: 18px; width: 300px; }
+.canvas-settings { padding: 18px; width: min(320px, calc(100vw - 32px)); max-height: calc(100dvh - 120px); overflow-y: auto; }
 .canvas-panel-heading { font-size: 14px; font-weight: 600; margin-bottom: 18px; }
 .canvas-settings fieldset { border: 0; margin: 0 0 16px; padding: 0; }
 .canvas-settings legend { font-size: 12px; margin-bottom: 7px; color: var(--explorer-muted); }
+.canvas-settings legend svg, .theme-control legend svg { vertical-align: -3px; margin-right: 6px; }
 .canvas-segments { display: flex; gap: 3px; background: var(--explorer-bg); border-radius: 7px; padding: 3px; }
 .canvas-segments button { flex: 1; padding: 8px 6px; border: 1px solid transparent; background: transparent; border-radius: 5px; font-weight: 400; }
 .canvas-segments button:hover { background: var(--explorer-soft); }
 .canvas-segments button[aria-pressed='true'] { background: var(--explorer-card); border-color: var(--explorer-border); }
+.canvas-settings-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.canvas-settings-heading .canvas-tool { width: 28px; height: 28px; }
 .canvas-settings p { font-size: 11px; line-height: 1.5; margin: 4px 0 0; color: var(--explorer-muted); }
 .canvas-settings .theme-control { margin: 16px 0 0; }
 .canvas-search { width: min(390px, calc(100vw - 32px)); overflow: hidden; }

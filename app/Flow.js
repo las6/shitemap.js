@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import CanvasControls from './CanvasControls';
+import CircuitSurface from './CircuitSurface';
 import PageDetails from './PageDetails';
 import useViewSettings from './useViewSettings';
 import Wordmark from '../components/Wordmark';
@@ -149,6 +150,7 @@ export const Flow = ({ rawNodes, rawEdges, site, warnings = [] }) => {
 
   return <div className={`app-layout explorer ${presentation ? 'presentation-mode' : ''}`} data-mode={mode} data-direction={direction} data-inspection={inspection} style={{ '--readability': scale, '--node-font-size': inspection ? M.fontSize : M.overviewFontSize, '--node-row-height': M.rowHeight, '--node-padding': M.padding, '--node-control-width': M.controlWidth, '--root-font-size': M.rootFontSize }}>
     <div className="sitemap-pane" ref={canvas}>
+      <CircuitSurface context="map" />
       <div className="explorer-site" aria-label="Current sitemap">
         <Link href="/" className="explorer-home" aria-label="New sitemap" title="New sitemap"><Image src="/favicon.svg" alt="" width={32} height={32} /></Link>
         <div className="explorer-site-identity"><span className="explorer-domain">{new URL(site.url).hostname.replace(/^www\./, '')}</span><span className="explorer-total">{rawNodes.filter(node => node.url).length} pages</span></div>

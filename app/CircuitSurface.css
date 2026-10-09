@@ -3,17 +3,16 @@
   --reflection-y: 0%;
   --circuit-tilt: 0deg;
   --circuit-turn: 0deg;
-  --finish-light: rgb(255 255 255 / .92);
-  --finish-mid: rgb(224 226 215 / .55);
-  --finish-dark: rgb(167 177 160 / .32);
-  --finish-spread: 1;
+  --finish-light: rgb(255 255 255 / calc(.92 * var(--texture-strength, 1)));
+  --finish-mid: rgb(91 110 88 / calc(var(--reflection-contrast, .35) * .45 * var(--texture-strength, 1)));
+  --finish-dark: rgb(30 46 31 / calc(var(--reflection-contrast, .35) * .55 * var(--texture-strength, 1)));
   position: absolute;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
   z-index: -1;
-  /* The unlit region drifts too, allowing more of the finish to reveal itself. */
-  mask-image: radial-gradient(ellipse 48% 34% at calc(50% - var(--reflection-x) * .3) calc(51% - var(--reflection-y) * .3), transparent 0% 38%, #000 100%);
+  /* A broad, softly unlit region: no small circular boundary around the finish. */
+  mask-image: radial-gradient(ellipse 85% 75% at calc(50% - var(--reflection-x) * .3) calc(51% - var(--reflection-y) * .3), transparent 0% 12%, #000 100%);
 }
 
 .circuit-surface-finish {
@@ -23,29 +22,60 @@
   inset: -12%;
   transform: rotateX(var(--circuit-tilt)) rotateZ(var(--circuit-turn));
   mask: url('/textures/circuitry-original-mask.svg?v=5') center / calc(var(--circuit-pattern-size) * 2) auto repeat;
-  /* Overlapping anisotropic reflections, with darker breaks between them.
-     The original raster is tiled for this comparison; the finish stays flat. */
+}
+
+.circuit-surface-light {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(100% / 1.24);
+  height: calc(100% / 1.24);
+  transform: translate(-50%, -50%);
+  /* Each reflection spans several viewports, with its centre offscreen.
+     Only slow-changing portions of the field are visible, even at high contrast. */
   background:
-    radial-gradient(ellipse calc(22% * var(--finish-spread)) calc(53% * var(--finish-spread)) at calc(17% + var(--reflection-x)) calc(26% + var(--reflection-y)), var(--finish-light) 0%, transparent 65%),
-    radial-gradient(ellipse calc(36% * var(--finish-spread)) calc(14% * var(--finish-spread)) at calc(48% - var(--reflection-x)) calc(16% + var(--reflection-y)), var(--finish-dark) 0%, transparent 74%),
-    radial-gradient(ellipse calc(16% * var(--finish-spread)) calc(32% * var(--finish-spread)) at calc(79% + var(--reflection-x)) calc(62% - var(--reflection-y)), var(--finish-light) 0%, transparent 72%),
-    radial-gradient(ellipse calc(30% * var(--finish-spread)) calc(17% * var(--finish-spread)) at calc(52% - var(--reflection-x)) calc(86% - var(--reflection-y)), var(--finish-dark) 0%, transparent 78%),
-    radial-gradient(ellipse calc(28% * var(--finish-spread)) calc(26% * var(--finish-spread)) at calc(90% - var(--reflection-x) * .5) calc(8% + var(--reflection-y) * .5), var(--finish-mid) 0%, transparent 76%);
+    radial-gradient(ellipse 180% 160% at calc(-65% + var(--reflection-x)) calc(-70% + var(--reflection-y)), var(--finish-light) 0%, transparent 100%),
+    radial-gradient(ellipse 170% 190% at calc(145% - var(--reflection-x)) calc(165% - var(--reflection-y)), var(--finish-dark) 0%, transparent 100%),
+    radial-gradient(ellipse 160% 180% at calc(170% - var(--reflection-x) * .7) calc(-60% + var(--reflection-y) * .7), var(--finish-mid) 0%, transparent 100%),
+    radial-gradient(ellipse 190% 170% at calc(-100% + var(--reflection-x) * .7) calc(185% - var(--reflection-y) * .7), var(--finish-light) 0%, transparent 100%);
 }
 
 
 :root[data-theme='dark'] .circuit-surface {
-    --finish-light: rgb(111 123 106 / .2);
-    --finish-mid: rgb(77 89 72 / .15);
-    --finish-dark: rgb(0 0 0 / .25);
-    --finish-spread: 1.8;
+    --finish-light: rgb(183 197 171 / calc(var(--reflection-contrast, .35) * .5 * var(--texture-strength, 1)));
+    --finish-mid: rgb(141 157 128 / calc(var(--reflection-contrast, .35) * .3 * var(--texture-strength, 1)));
+    --finish-dark: rgb(0 0 0 / calc(var(--reflection-contrast, .35) * .4 * var(--texture-strength, 1)));
   }
 
 @media (prefers-color-scheme: dark) {
 :root:not([data-theme='light']) .circuit-surface {
-    --finish-light: rgb(111 123 106 / .2);
-    --finish-mid: rgb(77 89 72 / .15);
-    --finish-dark: rgb(0 0 0 / .25);
-    --finish-spread: 1.8;
+    --finish-light: rgb(183 197 171 / calc(var(--reflection-contrast, .35) * .5 * var(--texture-strength, 1)));
+    --finish-mid: rgb(141 157 128 / calc(var(--reflection-contrast, .35) * .3 * var(--texture-strength, 1)));
+    --finish-dark: rgb(0 0 0 / calc(var(--reflection-contrast, .35) * .4 * var(--texture-strength, 1)));
   }
+}
+
+/* Grain is made of varied particles and fibres, rather than uniform pixels. */
+.circuit-surface[data-texture='grain'] .circuit-surface-finish {
+  mask-image: url('/textures/grain.svg');
+  mask-size: 512px 512px;
+}
+.circuit-surface[data-texture='sparse'] .circuit-surface-finish {
+  mask-image: url('/textures/circuitry.svg?v=4');
+  mask-size: 1600px auto;
+}
+.circuit-surface[data-isometric='true'] .circuit-surface-finish {
+  inset: -100%;
+  transform: rotateX(54.7356deg) rotateZ(-45deg);
+}
+/* Inverse of the projected isometric matrix. Only the mask tilts;
+   the reflection field retains the viewport's size and orientation. */
+.circuit-surface[data-isometric='true'] .circuit-surface-light {
+  width: calc(100% / 3);
+  height: calc(100% / 3);
+  transform: translate(-50%, -50%) matrix(.70710678, .70710678, -1.22474487, 1.22474487, 0, 0);
+}
+.circuit-surface[data-debug='true'] { mask-image: none; }
+.circuit-surface[data-debug='true'] .circuit-surface-light {
+  background: rgb(238 22 138 / calc(var(--texture-strength) * .5));
 }

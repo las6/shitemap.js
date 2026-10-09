@@ -1,5 +1,9 @@
 // Vendored Lucide icons; see public/licenses/lucide.txt.
 const shapes = {
+  'layers': <><path d="m12 3 9 5-9 5-9-5 9-5Z" /><path d="m3 12 9 5 9-5M3 16l9 5 9-5" /></>,
+  'grain': <><path d="m5 5 1 2m7-3 1 2m5 4-1 2M5 15l-1 2m8-4 1 2m4 5 1-2" /><circle cx="8" cy="11" r=".7" /><circle cx="10" cy="20" r=".7" /><circle cx="20" cy="5" r=".7" /></>,
+  'flask': <><path d="M9 3h6m-5 0v6L4 19a1.3 1.3 0 0 0 1.2 2h13.6a1.3 1.3 0 0 0 1.2-2L14 9V3M7 15h10" /></>,
+  'sun': <><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" /></>,
   'search': <><path d="m21 21-4.34-4.34" />
   <circle cx="11" cy="11" r="8" /></>,
   'sliders-horizontal': <><path d="M10 5H3" />

@@ -8,7 +8,7 @@ import { encodeSitemapUrl, isSitemapUrl, normalizeSiteInput } from '../component
 import { loadSitemap } from '../components/sitemapClient';
 import SitemapLoading from './SitemapLoading';
 import CircuitSurface from './CircuitSurface';
-import ThemeControl from './ThemeControl';
+import LandingAppearance from './LandingAppearance';
 import './ExplorerTheme.css';
 import './Landing.css';
 
@@ -84,7 +84,7 @@ export default function HomePage() {
   if (busy || opening) return <SitemapLoading message={progress || 'Loading sitemap…'} onCancel={opening ? undefined : cancelLoading} />;
   return <div className="landing">
     <CircuitSurface />
-    <div className="landing-toolbar"><ThemeControl /></div>
+    <div className="landing-toolbar"><LandingAppearance /></div>
     <div className="landing-content">
       <h1 className="landing-wordmark"><Wordmark /></h1>
       <div className="landing-main">

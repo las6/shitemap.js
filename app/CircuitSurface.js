@@ -2,12 +2,16 @@
 
 import { useEffect, useRef } from 'react';
 import './CircuitSurface.css';
+import useBackgroundSettings from './useBackgroundSettings';
 
 /** A flat varnish finish: only the reflection moves, never the routing. */
-export default function CircuitSurface() {
+export default function CircuitSurface({ context = 'landing' }) {
   const surface = useRef(null);
+  const [settings] = useBackgroundSettings();
+  const enabled = settings.texture !== 'off' && (context !== 'map' || settings.mapEnabled);
 
   useEffect(() => {
+    if (!enabled) return;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const finePointer = window.matchMedia('(pointer: fine)');
     let frame = 0;
@@ -48,9 +52,10 @@ export default function CircuitSurface() {
       window.removeEventListener('blur', reset);
       reducedMotion.removeEventListener('change', reset);
     };
-  }, []);
+  }, [enabled]);
 
-  return <div ref={surface} className="circuit-surface" aria-hidden="true">
-    <div className="circuit-surface-finish" />
+  if (!enabled) return null;
+  return <div ref={surface} className="circuit-surface" aria-hidden="true" data-texture={settings.texture} data-debug={process.env.NODE_ENV === 'development' && settings.debug} data-isometric={settings.isometric && settings.texture !== 'grain'} style={{ '--texture-strength': settings.visibility / 100, '--reflection-contrast': settings.contrast / 100 }}>
+    <div className="circuit-surface-finish"><div className="circuit-surface-light" /></div>
   </div>;
 }

@@ -1,0 +1,23 @@
+.background-controls { border-top: 1px solid var(--explorer-soft); margin-top: 18px; padding-top: 16px; }
+.background-controls h3 { display: flex; align-items: center; gap: 8px; font: 600 13px var(--node-font); margin: 0 0 14px; }
+.background-controls fieldset { border: 0; margin: 14px 0; padding: 0; min-width: 0; }
+.background-controls legend { font-size: 12px; color: var(--explorer-muted); margin-bottom: 8px; }
+.background-textures { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.background-textures button { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 9px 3px; border: 1px solid var(--explorer-border); border-radius: 6px; background: transparent; color: var(--explorer-muted); font: 400 11px var(--node-font); cursor: pointer; }
+.background-textures button[aria-pressed='true'] { background: var(--explorer-soft); color: var(--explorer-text); border-color: var(--explorer-text); }
+.background-check { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 12px; margin: 12px 0; }
+.background-check span { display: flex; align-items: center; gap: 7px; }
+.background-check input { width: 16px; height: 16px; accent-color: var(--explorer-text); cursor: pointer; }
+.background-check:has(input:disabled), .background-range:has(input:disabled) { opacity: .45; }
+.background-range { display: block; margin: 16px 0; font-size: 12px; }
+.background-range > span { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.background-range output { color: var(--explorer-muted); font-variant-numeric: tabular-nums; }
+.background-range input { width: 100%; accent-color: var(--explorer-text); }
+.background-controls .background-note { font: 400 11px/1.6 var(--node-font); color: var(--explorer-muted); margin: 14px 0 0; }
+.landing-appearance { position: relative; }
+.landing-appearance > button { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--explorer-border); border-radius: 7px; background: var(--explorer-card); padding: 9px 11px; font: 400 12px var(--node-font); }
+.landing-appearance-panel { position: absolute; top: calc(100% + 10px); right: 0; width: min(320px, calc(100vw - 40px)); max-height: calc(100dvh - 120px); overflow: auto; background: var(--explorer-card); border: 1px solid var(--explorer-border); padding: 18px; border-radius: 12px; box-shadow: 0 8px 28px #00000015; z-index: 40; }
+.landing-toolbar .landing-appearance-panel .theme-control { display: block; }
+.landing-toolbar .landing-appearance-panel .theme-control legend { float: none; margin: 0 0 8px; }
+.landing-toolbar .landing-appearance-panel .theme-segments { border: 0; }
+.landing-appearance-panel .theme-segments button { min-width: 0; }
