@@ -1,6 +1,6 @@
 # Shitemap delivery plan
 
-Updated October 9, 2026. Version 0.3.0. Supersedes the Groups/Flat/ELK plan; historical exploration remains in [IDEAS.md](IDEAS.md).
+Updated October 9, 2026. Version 0.3.1. Supersedes the Groups/Flat/ELK plan; historical exploration remains in [IDEAS.md](IDEAS.md). Implemented hardening and deployment requirements are in [HARDENING.md](docs/HARDENING.md).
 
 Status: `[x]` implemented, `[-]` partial/pending verification, `[ ]` planned. Source status is not evidence of production deployment.
 
@@ -13,7 +13,9 @@ Status: `[x]` implemented, `[-]` partial/pending verification, `[ ]` planned. So
 - [x] Recursive/Doto typography, system/light/dark themes, favicons, author link, and subtle package-version labels.
 - [x] Appearance controls are committed in `6cfd8e8`: textures, visibility, reflection contrast, isometric treatment, and optional map backgrounds. Fuchsia controls/effects are development-only, including persisted debug preferences. Production appearance verification is pending.
 - [x] During this review, 82 tests, lint, and production build passed before the final appearance commit. Re-run for the final release; this is a dated observation, not a permanent test count.
-- [ ] Protected destinations, aggregate resource budgets, public API quotas, usage instrumentation, exports, and page metadata integration.
+- [x] Protected sitemap destinations, aggregate XML/document/page/node budgets, bounded parsing structure, and a global index traversal queue.
+- [-] Shared Vercel quota guard implemented; the deployed Firewall rule and throttling behavior are not yet verified. No in-memory fallback allows unguarded production calls.
+- [ ] Usage instrumentation, exports, and page metadata integration.
 - [ ] Deployed discovery/reload/error-path verification for the hardened release.
 
 ## Service boundary and data flow
@@ -26,25 +28,30 @@ Kurkelo discovers locations and collects exact-page HTML metadata; it does not c
 
 ## 1. Release hardening — Shitemap
 
-- [ ] Benchmark small, broad, deep, indexed, compressed, and oversized fixtures. Record server memory/parse time and browser inventory/layout responsiveness; bytes alone do not establish renderability.
-- [ ] Introduce a protected fetch adapter: validate initial/child/redirect URLs, public destinations, and supported ports; bind connections to validated addresses while retaining hostname-based TLS verification. Allow local fixtures only by explicit development exception.
-- [ ] Replace recursive library scheduling with a bounded traversal queue and global counters. Bound cycles, nesting, URL length, and inferred nodes too. Nested indexes must share one concurrency budget.
-- [ ] Bound streaming downloads and decompression; Content-Length is only an early check. AbortSignal cannot interrupt synchronous XML parsing: benchmark CPU separately and decide whether isolation is needed.
-- [ ] Add public API quotas with hosting controls/shared state, not process-local counters. Bound discovery request bodies and future metadata requests too.
-- [ ] Define error codes for blocked destinations, resource limits, timeout, and throttling. Preserve usable pages with incomplete-map warnings for ordinary child failures; do not silently truncate a complete-looking map.
-- [ ] Offer individual child sitemaps when an index exceeds budgets and safe candidates are available.
+- [-] Synthetic small/broad/deep/10,000-page/10-MiB fixtures and adversarial index/compression tests run locally. Full browser capacity and deployed memory/concurrency tests remain; sampled Node RSS is not an isolated peak measurement.
+- [x] Protected fetch adapter validates initial/child/redirect URLs and DNS addresses, then pins the connection with TLS verification. The development local fixture is read from its bundled file, without network exceptions.
+- [x] One bounded traversal queue controls concurrency, cycles, nesting, file/page totals, URL length, and inferred graph nodes.
+- [x] Streaming download/decompression limits and XML depth/element bounds precede parsing. Deadline checks surround parsing, but cannot preempt synchronous parser CPU; production measurements determine whether isolation is needed.
+- [-] Both APIs enforce the shared Vercel quota guard, with 503 on unavailable/missing configuration and 429/retry guidance on rejection. Deploy/configure/test the rule. Discovery request and service-response bodies are bounded.
+- [x] Structured errors distinguish blocked destinations, resource limits, timeout, and throttling. Ordinary child failures retain incomplete-map warnings; limit failures return no truncated inventory.
+- [x] Landing/shared-link errors offer child sitemap choices discovered before a limit failure.
 
 Provisional starting budgets, subject to benchmarks:
 
 | Resource | Proposed budget | Current behavior |
 | --- | --- | --- |
 | Individual XML | 10 MiB, including decompression bounds | Implemented per document |
-| Aggregate decompressed XML | 20 MiB | Not implemented |
-| Sitemap documents | 50 | Not implemented |
-| Unique usable page URLs | 10,000 | Not implemented |
-| Concurrent XML downloads | 3 across entire traversal | Library scheduling is per index |
-| Network deadline | 45 seconds | Implemented; does not interrupt synchronous parsing/layout |
-| Nesting/generated/visible nodes | Select from benchmarks | No explicit budgets |
+| Aggregate downloaded/decompressed XML | 20 MiB each | Implemented as separate wire/final decoded counters |
+| Sitemap documents | 50 | Implemented |
+| Unique usable page URLs | 10,000 | Implemented |
+| Concurrent XML downloads | 3 across entire traversal | Implemented global scheduler |
+| Operation deadline | 45 seconds | Abort + elapsed checks; does not preempt synchronous CPU |
+| Index nesting / URL path depth | 8 / 32 | Implemented |
+| XML nesting / elements | 64 / 200,000 | Checked before parsing |
+| Generated page/folder nodes | 15,000 | Server and browser tree guard |
+| First-level branches | 500 | Fail before browser layout; preserves existing all-first-level presentation within the supported budget |
+
+An absolute visible-node budget during interactive expansion remains to be evaluated in browser capacity tests. These starting budgets are not performance guarantees.
 
 Acceptance: unsafe redirect/child destinations are blocked; nested indexes stay within global budgets; cyclic/oversized inputs terminate predictably; ordinary maps remain usable; completeness is explicit.
 
