@@ -1,6 +1,6 @@
 # Release verification — October 9, 2026
 
-Live/source: **0.4.1** at [shitemap.las6.net](https://shitemap.las6.net), with the deployed hardening and quota evidence in [HARDENING.md](HARDENING.md). PNG/SVG export and image clipboard copying are deployed. Concurrent uncommitted appearance/connector work remains separate.
+Live release: **0.4.1** at [shitemap.las6.net](https://shitemap.las6.net), with the deployed hardening and quota evidence in [HARDENING.md](HARDENING.md). PNG/SVG export and image clipboard copying are deployed. Concurrent uncommitted appearance/connector work remains separate.
 
 ## Completed checks
 
@@ -34,7 +34,7 @@ PNG starts at 2× resolution, reduces the whole image when necessary, and caps e
 - Hosting memory/concurrency measurements and extreme interactive expansion; no service-wide capacity guarantee is asserted.
 - Full browser partial-index/retry cases remain broader coverage work; server/API tests already cover bounded traversal, partial warnings, candidates, and errors.
 
-Next user-facing feature: selected-page metadata from Kurkelo. Keep the current single API allowance initially and arrange a dedicated Shitemap credential when Kurkelo provisioning is ready; no additional quota-policy layer is planned.
+Implemented locally, pending release: 50-child expansion batches and faster native export text measurement. Isolated tests/lint/build and local browser checks are recorded in [EXPORT_PERFORMANCE.md](EXPORT_PERFORMANCE.md). Selected-page metadata from Kurkelo follows those improvements. Keep the current single API allowance initially and arrange a dedicated Shitemap credential when Kurkelo provisioning is ready; no additional quota-policy layer is planned.
 
 ## 0.4.1 deployment evidence
 

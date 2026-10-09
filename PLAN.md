@@ -1,6 +1,6 @@
 # Shitemap delivery plan
 
-Updated October 9, 2026. Source/live version 0.4.1. Browser/export evidence is in [VERIFICATION.md](docs/VERIFICATION.md). Supersedes the Groups/Flat/ELK plan; historical exploration remains in [IDEAS.md](IDEAS.md). Implemented hardening and deployment requirements are in [HARDENING.md](docs/HARDENING.md).
+Updated October 9, 2026. Live version 0.4.1; local source includes subsequent connector refinements and the work below. Browser/export evidence is in [VERIFICATION.md](docs/VERIFICATION.md). Supersedes the Groups/Flat/ELK plan; historical exploration remains in [IDEAS.md](IDEAS.md). Implemented hardening and deployment requirements are in [HARDENING.md](docs/HARDENING.md).
 
 Status: `[x]` implemented, `[-]` partial/pending verification, `[ ]` planned. Source status is not evidence of production deployment.
 
@@ -25,7 +25,7 @@ Keep the current single Shitemap allowance of 20 API executions/minute/IP. Separ
 
 A dedicated Shitemap Kurkelo credential is agreed in principle but not provisioned. The current legacy key still works and shares its allowance with other consumers. Arrange that migration with Kurkelo when its key setup is ready.
 
-Focused browser/shared-link and synthetic capacity review plus PNG/SVG export are complete in source; 0.4.1 is deployed; check real devices/hosting capacity. Selected-page unfurling follows export. Basic operational measurement can grow alongside these; a new analytics platform or Centry integration is not a beta prerequisite.
+Focused browser/shared-link and synthetic capacity review plus PNG/SVG export are complete in source; 0.4.1 is deployed; check real devices/hosting capacity. Before selected-page metadata, improve ordinary section expansion and copy/export preparation. Basic operational measurement can grow alongside these; a new analytics platform or Centry integration is not a beta prerequisite.
 
 ## Service boundary and data flow
 
@@ -99,7 +99,16 @@ Centry is the proposed small error-reporting integration, not a requirement to b
 
 Acceptance: output matches the chosen structure, has no clipped labels/chrome, and explains raster size limits.
 
-## 5. Selected-page metadata — after export
+## 5. Expansion and copy performance — current work
+
+- [x] Local source: reveal all immediate children for sections of up to 50 children in one expansion; larger sections reveal 50 at a time. Preserve deeper collapse state and existing root behavior.
+- [x] Local source: replace per-character export reads with whole-line reads and binary searches for wrapped boundaries. Benchmark Pretext 0.0.9; retain native measurement for browser wrapping fidelity. Development-only phase timings separate readiness, measurement, encoding and clipboard completion. See [EXPORT_PERFORMANCE.md](docs/EXPORT_PERFORMANCE.md); no eager rendering, PNG cache or extra quality controls added.
+- [x] Tests cover 20/30/50-child sections, the 51-child boundary, larger remainder counts and nested collapse in Regular/Bare and both directions. Local browser confirms a 17-page collection opens fully in one click; image copy and SVG download succeed. Broader device checks remain.
+- [ ] Version bump, deploy and hosted smoke-check these local improvements when the next release is requested.
+
+Next: selected-page metadata, then coherent keyboard tree navigation with safe-zone camera following, then a canvas-scoped copy shortcut. Favicon exploration is independent polish. Whole-branch recursive expansion remains deferred.
+
+## 6. Selected-page metadata — after expansion/copy improvements
 
 - [ ] Add a server proxy calling Kurkelo with `include: ['metadata']`, `detail: 'compact'`; never expose the bearer key.
 - [ ] Request only a selected real page, debounce changes, deduplicate work, and reuse results. Opening a graph makes zero page-metadata requests.
