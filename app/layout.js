@@ -1,4 +1,4 @@
-import { Doto, Inter, Recursive } from 'next/font/google';
+import { Doto, Recursive } from 'next/font/google';
 import styles from '../styles/Home.module.css';
 import '../styles/globals.css';
 import { THEME_INIT_SCRIPT } from '../components/theme';
@@ -10,18 +10,11 @@ const doto = Doto({
 	display: 'swap',
 });
 
-const inter = Inter({
-	subsets: ['latin'],
-	weight: ['400', '700'],
-	variable: '--font-inter',
-	display: 'swap',
-});
-
 const recursive = Recursive({ subsets: ['latin'], variable: '--font-recursive', display: 'swap' });
 
 export default function RootLayout({ children }) {
 	return (
-		<html lang="en" suppressHydrationWarning className={`${doto.variable} ${inter.variable} ${recursive.variable}`}>
+		<html lang="en" suppressHydrationWarning className={`${doto.variable} ${recursive.variable}`}>
 			<head>
 				<script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
 				<title>Shitemap.js</title>

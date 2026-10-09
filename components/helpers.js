@@ -1,4 +1,4 @@
-// Estimate pixel width of a label string at ~0.72rem Inter font
+// Estimate pixel width of a label string at a small UI font size.
 export function estimateLabelWidth(label) {
 	if (!label) return 90;
 	return Math.ceil(label.length * 6.2 + 20);
