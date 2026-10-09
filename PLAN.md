@@ -12,11 +12,19 @@ Status: `[x]` implemented, `[-]` partial/pending verification, `[ ]` planned. So
 - [x] Shareable view/direction/detail parameters and selected-page hash. Links reload source data; they are not persisted snapshots of every expanded branch.
 - [x] Recursive/Doto typography, system/light/dark themes, favicons, author link, and subtle package-version labels.
 - [x] Appearance controls are committed in `6cfd8e8`: textures, visibility, reflection contrast, isometric treatment, and optional map backgrounds. Fuchsia controls/effects are development-only, including persisted debug preferences. Production appearance verification is pending.
-- [x] During this review, 82 tests, lint, and production build passed before the final appearance commit. Re-run for the final release; this is a dated observation, not a permanent test count.
+- [x] The deployed hardening snapshot passed 137 tests, lint, local production build, and hosted build on October 9. Concurrent uncommitted appearance changes were excluded; they need their own final verification.
 - [x] Protected sitemap destinations, aggregate XML/document/page/node budgets, bounded parsing structure, and a global index traversal queue.
 - [x] Shared Vercel quota guard and live `shitemap-api` rule verified: 20 calls/minute per client-IP key per region, shared across APIs. No in-memory fallback allows unguarded production calls.
 - [ ] Usage instrumentation, exports, and page metadata integration.
 - [-] Hosted hardening build, discovery, direct XML, blocked destinations, and shared 429/retry behavior verified. Browser reload/shared-link and capacity verification remain.
+
+## Practical next steps and scope
+
+Keep the current single Shitemap allowance of 20 API executions/minute/IP. Separate metadata buckets, additional burst policies, and a quota-management layer are not agreed requirements. Revisit the allowance when selected-page metadata exists and real usage shows a problem; browser reuse/debouncing should prevent unnecessary calls.
+
+A dedicated Shitemap Kurkelo credential is agreed in principle but not provisioned. The current legacy key still works and shares its allowance with other consumers. Arrange that migration with Kurkelo when its key setup is ready.
+
+Finish a focused browser/mobile/shared-link and large-map review, then PNG/SVG export. Selected-page unfurling follows export. Basic operational measurement can grow alongside these; a new analytics platform or Centry integration is not a beta prerequisite.
 
 ## Service boundary and data flow
 
@@ -60,8 +68,10 @@ Acceptance: unsafe redirect/child destinations are blocked; nested indexes stay 
 See [KURKELO_HANDOFF.md](docs/KURKELO_HANDOFF.md) for API requirements and acceptance criteria.
 
 - [ ] Resolve the documented DNS preflight/connection gap with an enforceable runtime-specific design.
-- [ ] Add authenticated caller quotas, shared per-domain concurrency/rate controls, cold-miss deduplication, and short failure cooldowns.
-- [ ] Define throttling/error/correlation behavior without breaking compact responses.
+- [x] Native authenticated caller and hostname rate limits deployed: 20/10 seconds and 60/minute, approximately enforced per Cloudflare location. Cache hits avoid hostname HTTP-attempt limits.
+- [x] Compatible HTTP 429/retry guidance and collector blocked/partial states delivered. Cross-service parent correlation remains proposed.
+- [ ] Provision a dedicated Shitemap key when Kurkelo key setup is ready; existing shared-key compatibility remains.
+- [ ] Evaluate duplicate cold-miss work and failure cooldowns with metadata usage; distributed concurrency/global accounting are not current scope.
 - [ ] Measure API calls, collector executions, and actual upstream attempts separately, with bounded telemetry/storage costs.
 
 No batch collector or sitemap-inventory API is required for the first Shitemap integration. Billing activation, paid subscriptions, and deployment are not implied by this plan.
@@ -70,9 +80,9 @@ No batch collector or sitemap-inventory API is required for the first Shitemap i
 
 - [ ] Adopt [OPERATIONS.md](docs/OPERATIONS.md): begin with server outcome/duration/cache/fetch counts and a small browser completion/feature-event pilot.
 - [ ] Choose retention and a collection sink using existing platform capabilities before adding an analytics service. Measurement is best effort; authoritative quota enforcement is separate.
-- [ ] Verify deployed discovery, direct XML, indexes, Unicode/shared links, cancellation, retries, partial warnings, limits, and mobile/large-map behavior.
+- [-] Deployed discovery, direct XML, blocked destinations, and shared throttling verified. Browser indexes, Unicode/shared links, cancellation, retries, partial warnings, and mobile/large-map review remain.
 - [ ] Verify server-held Kurkelo credentials and production-disabled diagnostics.
-- [ ] Re-run tests/lint/build; review browser errors and request amplification. Record deployment version and verification date.
+- [-] Hardening tests/lint/build and deployment evidence recorded in HARDENING.md. Re-run after concurrent appearance work; complete browser/request-amplification review.
 
 Centry is the proposed small error-reporting integration, not a requirement to build a new monitoring platform before beta. Structured logs must still make unexpected service failures diagnosable.
 
@@ -93,7 +103,7 @@ Acceptance: output matches the chosen structure, has no clipped labels/chrome, a
 - [ ] Show observed title/description/optional image and status/date in the details panel. Missing OG values and client-rendered-only tags are normal unavailable states.
 - [ ] Preserve URL-derived labels, source URL identity, and geometry initially. Inferred folders have no fetchable page.
 - [ ] Retain existing details on failure; validate links/images and provide image fallbacks. Image proxying must not introduce an unprotected fetch path.
-- [ ] Measure upstream work/cache behavior before prefetch or bulk enrichment.
+- [ ] Keep the single API allowance initially; tune only after measuring selected-page usage and throttling. No automatic prefetch or bulk enrichment is planned.
 
 ## Deferred
 

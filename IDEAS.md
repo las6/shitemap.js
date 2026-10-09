@@ -4,13 +4,13 @@
 A tool for the early stages of website refreshes or audits. It visually explores existing site structure to quickly understand the current architecture.
 
 ## MVP Requirements
-1. **Hosted Platform:** Server APIs for discovery and XML parsing are implemented. Deployed integration verification and public-service hardening remain release gates.
+1. **Hosted Platform:** Server APIs for discovery and XML parsing are implemented. Protected fetching, resource budgets, and public API quotas are deployed and smoke-tested. Broader browser/hosting capacity review remains; see PLAN.md for current evidence.
 2. **Improved Visualization:** Implemented with deterministic Regular/Bare tree views, collections, direction controls, and zoom-aware detail.
 3. **Interactivity:** Implemented collapse/expand, search, branch focus, page details, and presentation.
 
 ## Current priorities — October 9, 2026
 
-[PLAN.md](PLAN.md) is the current delivery plan. Priorities are bounded/protected sitemap fetching, public API quotas, operational usage measurement, deployed verification, PNG/SVG export, and then selected-page metadata from Kurkelo. Whole-site unfurling is deferred. Centry is the proposed error-tracking integration; app usage and service request accounting are separate concerns. See [usage and operations](docs/OPERATIONS.md) and the [Kurkelo handoff](docs/KURKELO_HANDOFF.md).
+[PLAN.md](PLAN.md) is the current delivery plan. Fetching protection and public API quotas are delivered. Next are focused release verification, PNG/SVG export, and then selected-page metadata from Kurkelo, with basic operational measurement added incrementally. Whole-site unfurling is deferred. Centry is the proposed error-tracking integration; app usage and service request accounting are separate concerns. See [usage and operations](docs/OPERATIONS.md) and the [Kurkelo handoff](docs/KURKELO_HANDOFF.md).
 
 ## Future / "Nice to Have" Features
 - **Editing & Sharing:** The ability to move nodes, rename them, or modify the visualization, and then share the resulting map via a unique URL (requires persistent storage/backend).

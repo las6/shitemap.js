@@ -2,6 +2,8 @@
 
 Proposal dated October 9, 2026 for Shitemap, Kurkelo, and ADvisor. This is operational/product measurement, not a marketing analytics project. No analytics SDK, shared event collector, storage service, or Centry integration has been added to Shitemap by this documentation work.
 
+Current scope: keep the single Shitemap API allowance and existing Kurkelo native limits. Additional feature-specific quota policies and a quota-management layer are not agreed requirements. Dedicated Shitemap credentials are planned when Kurkelo provisioning is ready. Start measurement with useful platform views and small server summaries; the event schema below is a proposal, not a requirement to implement every field before beta.
+
 ## Questions to answer
 
 - How many user operations finish, fail, time out, or are cancelled?
@@ -22,7 +24,7 @@ Do not infer unique people from request counts. Begin with aggregate counts and 
 
 A Shitemap discovery followed by an XML load is one exploration with at least two API calls and potentially many network attempts. Never sum these levels into a “users” metric. A cache hit can mean no website fetch; background refresh can mean work after the response. Count DNS and metadata image fetches separately if present. Cache hits in an edge layer may bypass application instrumentation: compare with platform request counts and document coverage.
 
-Quota enforcement uses authoritative shared counters. Sampled logs or best-effort browser events cannot enforce quotas or establish billing totals.
+Quota enforcement uses platform-owned counters: Vercel buckets are per region and Kurkelo native counters are approximate/per location. Neither provides strict global accounting. Sampled logs or best-effort browser events cannot enforce quotas or establish billing totals.
 
 ## Small common event contract
 

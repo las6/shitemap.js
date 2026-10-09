@@ -24,21 +24,21 @@ Existing exact-page support is sufficient for the first unfurling feature:
 
 Shitemap will fetch only selected real pages. No automatic whole-map unfurling, batch/jobs endpoint, browser rendering, screenshots, or new inventory API is requested now.
 
-## Required service work
+## Original service targets and remaining review
 
 | Priority | Requirement | Acceptance evidence |
 | --- | --- | --- |
 | Release | Close public-DNS-preflight/connection enforcement gap | Document supported Workers enforcement or protected fetch architecture; test private destinations, DNS changes, and each redirect. Another preflight alone is insufficient. |
-| Release | Authenticated caller budgets and global protection | Server-verified caller identity, sustained/burst request caps and bounded concurrent work. One public consumer cannot exhaust the service through its valid key. |
-| Release | Shared per-domain limits | Requests from different callers/instances share an effective origin budget, including redirects and retries. Verify with concurrent load. |
-| Release | Stable throttling and failure semantics | API-level quota rejection uses HTTP 429 and `Retry-After`; collector-specific blocked/partial/failure states retain the existing report contract. Shitemap can show a retry state without interpreting string messages. |
-| Before metadata | Coalesce cold misses | Simultaneous exact-page/collector cache misses share bounded work, not just stale refreshes in one isolate. Document guarantees if coordination is best effort. |
-| Before metadata | Brief failure cooldowns | Repeated timeout/blocked/upstream-429 requests do not repeatedly fetch the source. TTL depends on failure type and upstream retry guidance; preserve successful stale evidence. |
+| Delivered for current scope | Authenticated caller budgets | Native 20/10s and 60/minute per-location counters deployed. Strict global accounting/distributed concurrency are outside the agreed scope. Dedicated consumer credentials remain to be provisioned. |
+| Delivered for current scope | Shared per-hostname limits | Native per-location HTTP-attempt limits cover callers, redirects, and fallbacks; cache hits avoid hostname checks. Limits are approximate, not a strict global origin budget. |
+| Delivered | Stable throttling and failure semantics | Service 429/Retry-After and collector blocked/partial states are implemented; Shitemap preserves retry guidance. |
+| Evaluate with metadata | Coalesce cold misses | Simultaneous exact-page/collector cache misses share bounded work, not just stale refreshes in one isolate. Document guarantees if coordination is best effort. |
+| Evaluate with metadata | Brief failure cooldowns | Repeated timeout/blocked/upstream-429 requests do not repeatedly fetch the source. TTL depends on failure type and upstream retry guidance; preserve successful stale evidence. |
 | Alongside hardening | Request/collector/upstream measurement | Counts and durations distinguish cache hits, stale/background refresh, actual HTML/XML/DNS/HEAD attempts, redirects/retries, throttling, and failures. Instrument real network attempts, not inferred fanout. |
 
 Prefer server-controlled consumer identities/credentials for `shitemap`, `advisor`, and Kurkelo's own UI. A client-supplied app-name header is not authority for quotas. Do not forward these credentials or caller authorization to inspected websites.
 
-Rate-limit controls need bounded/shared enforcement across instances; isolate-local maps are an optimization, not a service-wide guarantee. Choose runtime/storage mechanisms explicitly. No paid storage, billing changes, or deployment are requested by this handoff.
+The native shared, approximate per-location counters satisfy the agreed initial quota scope. Strict global budgets, distributed reservations, and additional policy layers are not current requirements. A dedicated Shitemap key is agreed in principle and waits for Kurkelo key provisioning. No paid storage or billing changes are requested by this handoff.
 
 ## API compatibility and correlation
 
@@ -62,11 +62,11 @@ Centry is the proposed error destination. Its existing client has browser, Worke
 
 Kurkelo should capture unexpected exceptions and internal dependency failures, with environment/release, collector, operation/request IDs, and scrubbed context. Expected no-sitemap/no-metadata/blocked/rate-limited outcomes belong in operational counters, not an error event per request. Reporting must be bounded and must not break discovery or recursively report its own transport failures.
 
-## Suggested delivery chunks
+## Remaining sequence
 
-1. Document connection enforcement and caller/quota decisions; add policy/load fixtures.
-2. Implement service and domain quotas plus compatible errors/retry behavior.
-3. Add cold-miss coordination/failure cooldowns and tests for concurrent requests, stale refresh, and failed refresh retention.
-4. Add request/fetch measurement, then optional Centry reporting; update API/client docs and provide verified examples to Shitemap.
+1. Review/document the connection-enforcement question separately from the delivered quotas.
+2. Provision a dedicated Shitemap credential when Kurkelo key setup is ready.
+3. Support selected-page metadata with request reuse; evaluate cold-miss duplication and cooldowns from actual usage.
+4. Add useful request/fetch measurement and optional Centry reporting incrementally. No new monitoring platform or multiple Shitemap quota policies are required now.
 
 Notify the user of what is implemented versus still proposed. Coordinate Shitemap consumer changes against the verified contract; do not deploy or provision services solely because of this handoff.

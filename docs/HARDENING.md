@@ -24,7 +24,7 @@ Error JSON contains `error`, stable `code`, generated `requestId`, and optional 
 
 The browser handles structured sitemap failures and offers individual child sitemaps from both the landing flow and shared links. Search/hash/page identity behavior is unchanged.
 
-## Production quota setup — required before deploying this change
+## Production quota configuration — published; retain on future deployments
 
 The source guard uses `@vercel/firewall` with rate-limit ID `shitemap-api`. It shares the client-IP bucket across discovery and sitemap API executions. It trusts the platform-provided IP only when running on Vercel, uses the deployment's `VERCEL_URL` rather than a caller Host header, forwards only the minimal quota headers, and limits the check to one second. No per-process fallback is used.
 
