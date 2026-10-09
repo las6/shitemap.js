@@ -1,0 +1,25 @@
+/* Restyle these semantic tokens without touching nodes, tree data or routing. */
+.explorer, .landing {
+  --explorer-bg: #faf9f5; --explorer-card: #fffefa; --explorer-text: #2c352f;
+  --explorer-muted: #667268; --explorer-border: #a6b2a5; --explorer-dot: #e5e8df;
+  --explorer-accent: #ae4d3a; --explorer-soft: #eef1e8; --explorer-selected: #f8e9dd;
+  --explorer-root: #28332d; --explorer-root-text: #fffdf3;
+  --node-radius: 8px; --node-font: var(--font-recursive), sans-serif;
+  --root-font: var(--font-doto), monospace;
+  --explorer-edge: var(--explorer-border); --node-shadow: none; --node-label-weight: 500;
+}
+:root[data-theme='dark'] .explorer, :root[data-theme='dark'] .landing { --explorer-bg: #111713; --explorer-card: #343f36; --explorer-text: #f4f5ed;
+    --explorer-muted: #c5cfc2; --explorer-border: #4c5b4e; --explorer-dot: #263127;
+    --explorer-accent: #f8b19b; --explorer-soft: #414f3e; --explorer-selected: #584334;
+    --explorer-root: #c5d6b0; --explorer-root-text: #19251b;
+    --explorer-edge: #73836e; --node-label-weight: 550;
+    --node-shadow: 0 3px 10px rgb(0 0 0 / .2), inset 0 1px 0 rgb(255 255 255 / .04); }
+
+@media (prefers-color-scheme: dark) {
+:root:not([data-theme='light']) .explorer, :root:not([data-theme='light']) .landing { --explorer-bg: #111713; --explorer-card: #343f36; --explorer-text: #f4f5ed;
+    --explorer-muted: #c5cfc2; --explorer-border: #4c5b4e; --explorer-dot: #263127;
+    --explorer-accent: #f8b19b; --explorer-soft: #414f3e; --explorer-selected: #584334;
+    --explorer-root: #c5d6b0; --explorer-root-text: #19251b;
+    --explorer-edge: #73836e; --node-label-weight: 550;
+    --node-shadow: 0 3px 10px rgb(0 0 0 / .2), inset 0 1px 0 rgb(255 255 255 / .04); }
+}

@@ -1,451 +1,178 @@
-"use client";
+'use client';
 
-import ELK from "elkjs/lib/elk.bundled.js";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ReactFlow,
-	MiniMap,
-	Controls,
-	ConnectionLineType,
-	Background,
-	BackgroundVariant,
-	useNodesState,
-	useEdgesState,
-	addEdge,
-	useReactFlow,
-} from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
-import "./NodeDetails.css";
-import SectionGroupNode from "./SectionGroupNode";
-import {
-	detectAlgorithm,
-	computeGroupLayout,
-	computeSectionLayout,
-} from "../components/helpers";
+import Link from 'next/link';
+import Image from 'next/image';
+import CanvasControls from './CanvasControls';
+import PageDetails from './PageDetails';
+import useViewSettings from './useViewSettings';
+import Wordmark from '../components/Wordmark';
+import { pageFocus } from '../components/pageFocus';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ReactFlow, useReactFlow, useViewport } from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
+import './Explorer.css';
+import './ExplorerTheme.css';
+import { EXPLORER_METRICS as M } from '../components/explorerStyle';
+import { PageNode, StackNode, TreePath } from './SitemapNodes';
+import { indexTree, initialCollapsed, ancestorIds, descendantIds, explorerLayout, displayLabel } from '../components/explorer';
 
-// Stable nodeTypes object — must not be recreated on every render
-const nodeTypes = { sectionGroup: SectionGroupNode };
+const nodeTypes = { page: PageNode, stack: StackNode };
+const edgeTypes = { treePath: TreePath };
+const mapPadding = { top: '95px', bottom: '100px', left: '40px', right: '40px' };
 
-const elk = new ELK();
+export const Flow = ({ rawNodes, rawEdges, site, warnings = [] }) => {
+  const tree = useMemo(() => indexTree(rawNodes, rawEdges), [rawNodes, rawEdges]);
+  const [collapsed, setCollapsed] = useState(() => initialCollapsed(tree));
+  const [limits, setLimits] = useState(new Map());
+  const [selectedId, setSelectedId] = useState(null);
+  const [presentation, setPresentation] = useState(false);
+  const [{ mode, direction, detail }, updateSetting] = useViewSettings();
+  const [query, setQuery] = useState('');
+  const instance = useReactFlow();
+  const { zoom } = useViewport();
+  const initialFit = useRef(false);
+  const canvas = useRef(null);
+  const focusRequest = useRef(null);
+  const refitRequest = useRef(false);
+  const previousView = useRef({ mode, direction });
+  const selected = tree.byId.get(selectedId);
+  const scale = Math.max(1, Math.min(M.layoutScale, 1 / zoom));
+  // Reserve room for enlarged type so zooming doesn't trigger layout jumps.
+  const layout = useMemo(() => explorerLayout(tree, collapsed, M.layoutScale, limits, { mode, direction }), [tree, collapsed, limits, mode, direction]);
 
-function getNodeDimensions(depth) {
-	if (depth === 0) return { width: 200, height: 48 };
-	if (depth === 1) return { width: 172, height: 40 };
-	return { width: 160, height: 34 };
-}
+  const toggle = useCallback(id => {
+    // Keep the viewport fixed while the branch contracts; only explicit Fit or
+    // search navigation changes the camera.
+    if (selectedId && ancestorIds(tree, selectedId).includes(id)) history.replaceState(null, '', `#${id}`);
+    setCollapsed(previous => {
+      const next = new Set(previous);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+    setSelectedId(previous => previous && ancestorIds(tree, previous).includes(id) ? id : previous);
+  }, [tree, selectedId]);
 
-async function runELKLayout(nodes, edges, algorithm) {
-	const elkChildren = nodes.map((n) => ({
-		id: n.id,
-		...getNodeDimensions(n.data?.depth ?? 1),
-	}));
+  const showMore = useCallback(id => {
+    setLimits(previous => new Map(previous).set(id, (previous.get(id) || M.batchSize) + M.batchSize));
+  }, []);
 
-	const elkEdges = edges.map((e) => ({
-		id: e.id,
-		sources: [e.source],
-		targets: [e.target],
-	}));
+  const reveal = useCallback((id, center = true) => {
+    if (!tree.byId.has(id)) return;
+    setCollapsed(previous => {
+      const next = new Set(previous);
+      ancestorIds(tree, id).forEach(parent => next.delete(parent));
+      return next;
+    });
+    setLimits(previous => {
+      const next = new Map(previous);
+      let child = id;
+      for (const parent of ancestorIds(tree, id)) {
+        const index = tree.children.get(parent).indexOf(child);
+        if (index >= (next.get(parent) || M.batchSize)) next.set(parent, index + 1);
+        child = parent;
+      }
+      return next;
+    });
+    setSelectedId(id);
+    if (center) focusRequest.current = { id, branch: false };
+    history.replaceState(null, '', `#${id}`);
+  }, [tree]);
 
-	let layoutOptions;
-	if (algorithm === "radial") {
-		layoutOptions = {
-			"elk.algorithm": "radial",
-			"elk.spacing.nodeNode": "30",
-			"elk.radial.compactionStepSize": "5",
-		};
-	} else if (algorithm === "layered-tb") {
-		layoutOptions = {
-			"elk.algorithm": "layered",
-			"elk.direction": "DOWN",
-			"elk.layered.wrapping.strategy": "MULTI_EDGE",
-			"elk.aspectRatio": "1.6",
-			"elk.spacing.nodeNode": "18",
-			"elk.layered.spacing.nodeNodeBetweenLayers": "50",
-		};
-	} else {
-		// layered-lr
-		layoutOptions = {
-			"elk.algorithm": "layered",
-			"elk.direction": "RIGHT",
-			"elk.layered.wrapping.strategy": "MULTI_EDGE",
-			"elk.aspectRatio": "1.6",
-			"elk.spacing.nodeNode": "18",
-			"elk.layered.spacing.nodeNodeBetweenLayers": "50",
-		};
-	}
+  useEffect(() => {
+    const fromHash = () => {
+      const id = window.location.hash.slice(1);
+      if (id) reveal(id);
+    };
+    fromHash();
+    window.addEventListener('hashchange', fromHash);
+    return () => window.removeEventListener('hashchange', fromHash);
+  }, [reveal]);
 
-	const graph = {
-		id: "root",
-		layoutOptions,
-		children: elkChildren,
-		edges: elkEdges,
-	};
-	const layouted = await elk.layout(graph);
-	const isLR = algorithm === "layered-lr";
+  useEffect(() => {
+    const previous = previousView.current;
+    if (initialFit.current && (previous.mode !== mode || previous.direction !== direction)) {
+      refitRequest.current = true;
+    }
+    previousView.current = { mode, direction };
+  }, [mode, direction]);
 
-	return nodes.map((n) => {
-		const elkNode = layouted.children.find((c) => c.id === n.id);
-		const dims = getNodeDimensions(n.data?.depth ?? 1);
-		const depth = n.data?.depth ?? 1;
-		const className =
-			depth === 0 ? "node-root" : depth === 1 ? "node-section" : "node-leaf";
-		return {
-			...n,
-			className,
-			position: { x: elkNode?.x ?? 0, y: elkNode?.y ?? 0 },
-			targetPosition: isLR ? "left" : "top",
-			sourcePosition: isLR ? "right" : "bottom",
-			width: dims.width,
-			height: dims.height,
-			style: { ...n.style, width: dims.width, height: dims.height },
-		};
-	});
-}
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (refitRequest.current) {
+        refitRequest.current = false;
+        focusRequest.current = null;
+        instance.fitView({ nodes: layout.nodes, padding: mapPadding, maxZoom: 1, duration: 250 });
+      } else if (focusRequest.current) {
+        const { id, branch, viewport } = focusRequest.current;
+        const ids = branch ? new Set([id, ...descendantIds(tree, id)]) : new Set([id]);
+        const focusNodes = layout.nodes.filter(node => ids.has(node.id) || (branch && ids.has(node.data.parentId)));
+        focusRequest.current = null;
+        initialFit.current = true;
+        if (viewport) instance.setViewport(viewport, { duration: 250 });
+        else instance.fitView({ nodes: focusNodes, padding: branch ? 0.25 : 0.8, maxZoom: 1, duration: 250 });
+      } else if (!initialFit.current) {
+        initialFit.current = true;
+        const bounds = instance.getNodesBounds(layout.nodes);
+        const viewport = { width: canvas.current.clientWidth, height: canvas.current.clientHeight };
+        const fitZoom = Math.min((viewport.width - 80) / bounds.width, (viewport.height - 195) / bounds.height);
+        const root = layout.nodes.find(node => node.data.isSiteRoot);
+        if (root && fitZoom < M.initialOverviewZoom) {
+          const children = new Set(layout.edges.filter(edge => edge.source === root.id).map(edge => edge.target));
+          const focus = pageFocus(root, layout.nodes.filter(node => children.has(node.id)), viewport, M.initialOverviewZoom);
+          instance.setCenter(focus.x, focus.y, { zoom: focus.zoom });
+        } else instance.fitView({ padding: mapPadding, maxZoom: 1 });
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [layout, selectedId, instance, tree, detail]);
 
-const ALGORITHMS = [
-	{ id: "groups", label: "⊞ Groups" },
-	{ id: "sections", label: "⊟ Flat" },
-	{ id: "layered-lr", label: "→ Layered" },
-	{ id: "layered-tb", label: "↓ Layered" },
-	{ id: "radial", label: "◎ Radial" },
-];
+  const centerPage = useCallback(id => {
+    const node = instance.getNode(id);
+    if (!node) return;
+    reveal(id, false);
+    const childIds = new Set(layout.edges.filter(edge => edge.source === id).map(edge => edge.target));
+    const children = instance.getNodes().filter(child => childIds.has(child.id));
+    const focus = pageFocus(node, children, { width: canvas.current.clientWidth, height: canvas.current.clientHeight }, instance.getZoom());
+    instance.setCenter(focus.x, focus.y, { zoom: focus.zoom, duration: 250 });
+  }, [instance, reveal, layout.edges]);
 
-export const Flow = ({ rawNodes, rawEdges, site }) => {
-	const [nodes, setNodes, onNodesChange] = useNodesState([]);
-	const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-	const [algorithm, setAlgorithm] = useState(null);
-	const [layouting, setLayouting] = useState(false);
-	const [selectedNode, setSelectedNode] = useState(null);
-	const [open, setOpen] = useState(false);
-	const [hiddenNodes, setHiddenNodes] = useState([]);
-	const [iframeUrl, setIframeUrl] = useState(null);
-	const [iframeOpen, setIframeOpen] = useState(false);
-	const autoDetectedRef = useRef(false);
-	const needsFitViewRef = useRef(false);
-	const reactFlowInstance = useReactFlow();
+  const inspection = detail === 'inspection' || (detail === 'auto' && zoom >= M.inspectionZoom);
+  const highlighted = useMemo(() => new Set(selectedId && tree.parent.has(selectedId) ? descendantIds(tree, selectedId) : []), [tree, selectedId]);
+  const nodes = layout.nodes.map(node => ({ ...node,
+    selected: node.id === selectedId,
+    className: highlighted.has(node.id) || (node.type === 'stack' && ((node.data.parentId === selectedId && tree.parent.has(selectedId)) || highlighted.has(node.data.parentId))) ? 'branch-highlight' : '',
+    data: { ...node.data, url: node.url, onToggle: toggle, onShowMore: showMore, readability: scale, mode, inspection, onSelect: id => reveal(id, false), onCenter: centerPage,
+      path: node.url ? new URL(node.url).pathname : node.data.fullPath,
+      parentLabel: tree.byId.get(node.data.parentId)?.data.label } }));
+  const ancestors = selected ? ancestorIds(tree, selectedId).reverse().map(id => tree.byId.get(id)) : [];
+  const matches = query.trim() ? rawNodes.filter(node => `${node.data.label} ${node.url || node.data.fullPath}`.toLowerCase().includes(query.trim().toLowerCase())) : [];
 
-	// Auto-detect once when nodes first arrive
-	useEffect(() => {
-		if (rawNodes?.length > 0 && !autoDetectedRef.current) {
-			autoDetectedRef.current = true;
-			setAlgorithm(detectAlgorithm(rawNodes));
-		}
-	}, [rawNodes]);
+  return <div className={`app-layout explorer ${presentation ? 'presentation-mode' : ''}`} data-mode={mode} data-direction={direction} data-inspection={inspection} style={{ '--readability': scale, '--node-font-size': inspection ? M.fontSize : M.overviewFontSize, '--node-row-height': M.rowHeight, '--node-padding': M.padding, '--node-control-width': M.controlWidth, '--root-font-size': M.rootFontSize }}>
+    <div className="sitemap-pane" ref={canvas}>
+      <div className="explorer-site" aria-label="Current sitemap">
+        <Link href="/" className="explorer-home" aria-label="New sitemap" title="New sitemap"><Image src="/favicon.svg" alt="" width={32} height={32} /></Link>
+        <div className="explorer-site-identity"><span className="explorer-domain">{new URL(site.url).hostname.replace(/^www\./, '')}</span><span className="explorer-total">{rawNodes.filter(node => node.url).length} pages</span></div>
+      </div>
+      {warnings.length > 0 && <details className="explorer-warning"><summary>Map may be incomplete</summary><p role="status">{warnings.join(' ')}</p></details>}
+      <Link href="/" className="explorer-watermark" aria-label="Shitemap home"><Wordmark /></Link>
+      <CanvasControls presentation={presentation} setPresentation={setPresentation} mode={mode} direction={direction} detail={detail}
+        onMode={value => updateSetting('mode', value)} onDirection={value => updateSetting('direction', value)} onDetail={value => updateSetting('detail', value)} zoom={zoom}
+        onZoomIn={() => instance.zoomIn({ duration: 150 })} onZoomOut={() => instance.zoomOut({ duration: 150 })}
+        onFit={() => instance.fitView({ padding: mapPadding, maxZoom: 1, duration: 250 })}
+        query={query} onQuery={setQuery} matches={matches} onReveal={reveal} />
+      <div className="layoutflow">
+        <ReactFlow nodes={nodes} edges={layout.edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodesConnectable={false} nodesDraggable={false}
+          edgesFocusable={false} zoomOnDoubleClick={false} onNodeDoubleClick={(_, node) => { if (node.type === 'page') centerPage(node.id); }} onNodeClick={(_, node) => { if (node.type === 'page') reveal(node.id, false); }}
+          onPaneClick={() => { setSelectedId(null); history.replaceState(history.state, '', window.location.pathname + window.location.search); }}
+          minZoom={0.02} maxZoom={2} proOptions={{ hideAttribution: false }}>
 
-	// Run layout whenever nodes or algorithm changes
-	useEffect(() => {
-		if (!rawNodes || !rawEdges || !algorithm) return;
+        </ReactFlow>
+      </div>
+      {!presentation && selected && <PageDetails page={selected} isRoot={!tree.parent.has(selectedId)} ancestors={ancestors}
+        childCount={tree.children.get(selectedId)?.length || 0} collapsed={collapsed.has(selectedId)}
+        onClose={() => { setSelectedId(null); history.replaceState(history.state, '', window.location.pathname + window.location.search); }}
+        onReveal={reveal} onToggle={toggle} />}
 
-		const run = async () => {
-			setLayouting(true);
-			try {
-				let layoutedNodes, layoutedEdges;
-				if (algorithm === "groups") {
-					const result = computeGroupLayout(rawNodes, rawEdges);
-					layoutedNodes = result.nodes;
-					layoutedEdges = result.edges;
-				} else if (algorithm === "sections") {
-					layoutedNodes = computeSectionLayout(rawNodes, rawEdges);
-					layoutedEdges = rawEdges;
-				} else {
-					layoutedNodes = await runELKLayout(rawNodes, rawEdges, algorithm);
-					layoutedEdges = rawEdges;
-				}
-				setNodes(layoutedNodes);
-				setEdges(layoutedEdges);
-				setHiddenNodes([]);
-				needsFitViewRef.current = true;
-			} catch (err) {
-				console.error("Layout failed:", err);
-			} finally {
-				setLayouting(false);
-			}
-		};
-
-		run();
-	}, [rawNodes, rawEdges, algorithm]);
-
-	// Fit view only after a fresh layout, not on every node state change (e.g. selection)
-	useEffect(() => {
-		if (!layouting && needsFitViewRef.current) {
-			needsFitViewRef.current = false;
-			setTimeout(() => reactFlowInstance.fitView({ padding: 0.08 }), 60);
-		}
-	}, [layouting]);
-
-	const handleHashChange = useCallback(() => {
-		const hash = window.location.hash.substring(1);
-		if (!hash) return;
-		const node = nodes.find((n) => n.id === hash);
-		if (node) {
-			reactFlowInstance.fitView({ nodes: [node], padding: 0.3, maxZoom: 1.25 });
-			setSelectedNode(node);
-			setOpen(true);
-		}
-	}, [nodes, reactFlowInstance]);
-
-	useEffect(() => {
-		window.addEventListener("hashchange", handleHashChange);
-		return () => window.removeEventListener("hashchange", handleHashChange);
-	}, [handleHashChange]);
-
-	const onConnect = useCallback(
-		(params) =>
-			setEdges((eds) =>
-				addEdge({ ...params, type: ConnectionLineType.SmoothStep }, eds),
-			),
-		[setEdges],
-	);
-
-	const handleNodeClick = (_, node) => {
-		setSelectedNode(node);
-		setOpen(true);
-		history.replaceState(null, null, `#${node.id}`);
-	};
-
-	const handleClose = () => {
-		setOpen(false);
-		setSelectedNode(null);
-		history.replaceState(null, null, "");
-	};
-
-	const handleBreadcrumbClick = useCallback(
-		(node) => {
-			setSelectedNode(node);
-			history.replaceState(null, null, `#${node.id}`);
-			reactFlowInstance.fitView({ nodes: [node], padding: 0.3, maxZoom: 1.25 });
-		},
-		[reactFlowInstance],
-	);
-
-	const toggleChildrenVisibility = useCallback(() => {
-		if (!selectedNode) return;
-		const getDescendants = (nodeId) => {
-			const kids = edges
-				.filter((e) => e.source === nodeId)
-				.map((e) => e.target);
-			return kids.flatMap((kidId) => [kidId, ...getDescendants(kidId)]);
-		};
-		const descendants = getDescendants(selectedNode.id);
-		if (descendants.length === 0) return;
-		setHiddenNodes((prev) => {
-			const anyHidden = descendants.some((id) => prev.includes(id));
-			if (anyHidden) {
-				return prev.filter((id) => !descendants.includes(id));
-			} else {
-				return [...prev, ...descendants.filter((id) => !prev.includes(id))];
-			}
-		});
-	}, [selectedNode, edges]);
-
-	const isHidden = (id) => {
-		if (hiddenNodes.includes(id)) return true;
-		const parent = edges.find((e) => e.target === id);
-		return parent ? isHidden(parent.source) : false;
-	};
-
-	// All descendants of the selected node, mapped to their depth (1 = direct child)
-	const selectedDescendantDepths = useMemo(() => {
-		if (!selectedNode) return new Map();
-		const map = new Map();
-		const traverse = (nodeId, depth) => {
-			edges
-				.filter((e) => e.source === nodeId)
-				.forEach((e) => {
-					if (!map.has(e.target)) {
-						map.set(e.target, depth);
-						traverse(e.target, depth + 1);
-					}
-				});
-		};
-		traverse(selectedNode.id, 1);
-		return map;
-	}, [selectedNode, edges]);
-
-	// Breadcrumb path from root to selected node
-	const breadcrumbs = useMemo(() => {
-		if (!selectedNode) return [];
-		const nodeMap = new Map(nodes.map((n) => [n.id, n]));
-		const path = [];
-		let currentId = selectedNode.id;
-		const visited = new Set();
-		while (currentId && !visited.has(currentId)) {
-			visited.add(currentId);
-			const node = nodeMap.get(currentId);
-			if (!node) break;
-			path.unshift(node);
-			// edges cover flat/ELK layouts; parentNode covers groups compound layout
-			const parentEdge = edges.find((e) => e.target === currentId);
-			currentId = parentEdge?.source ?? node.parentId ?? null;
-		}
-		return path;
-	}, [selectedNode, nodes, edges]);
-
-	// While iframe is open, show the selected node's URL; fall back to last known URL when closed
-	const displayIframeUrl = (iframeOpen && selectedNode?.url) ? selectedNode.url : iframeUrl;
-
-	// Nodes that have at least one directly hidden child (collapsed)
-	const collapsedNodeIds = useMemo(() => {
-		const set = new Set();
-		nodes.forEach((n) => {
-			const kids = edges.filter((e) => e.source === n.id).map((e) => e.target);
-			if (
-				kids.length > 0 &&
-				kids.some((kidId) => hiddenNodes.includes(kidId))
-			) {
-				set.add(n.id);
-			}
-		});
-		return set;
-	}, [nodes, edges, hiddenNodes]);
-
-	const filteredNodes = nodes.filter((n) => !isHidden(n.id));
-	const filteredEdges = edges.filter(
-		(e) => !isHidden(e.source) && !isHidden(e.target),
-	);
-
-	// Augment nodes with highlight/collapsed classes without mutating layout state
-	const displayNodes = filteredNodes.map((n) => {
-		const classes = [n.className];
-		const descendantDepth = selectedDescendantDepths.get(n.id);
-		if (descendantDepth) {
-			classes.push(
-				descendantDepth === 1
-					? "node-selected-child-1"
-					: descendantDepth === 2
-						? "node-selected-child-2"
-						: "node-selected-child-3",
-			);
-		}
-		if (collapsedNodeIds.has(n.id)) classes.push("node-collapsed");
-		const newClassName = classes.filter(Boolean).join(" ").trim();
-		return newClassName !== n.className ? { ...n, className: newClassName } : n;
-	});
-
-	return (
-		<div className="app-layout">
-			<div className="sitemap-pane">
-				<div className="layoutflow">
-					<div className="controls">
-						{ALGORITHMS.map((a) => (
-							<button
-								key={a.id}
-								className={algorithm === a.id ? "active" : ""}
-								onClick={() => setAlgorithm(a.id)}
-							>
-								{a.label}
-							</button>
-						))}
-					</div>
-					{layouting && <div className="layout-loading">Laying out…</div>}
-					<ReactFlow
-						nodes={displayNodes}
-						edges={filteredEdges}
-						nodeTypes={nodeTypes}
-						onNodesChange={onNodesChange}
-						onEdgesChange={onEdgesChange}
-						nodesConnectable={false}
-						nodesDraggable={true}
-						onConnect={onConnect}
-						onNodeClick={handleNodeClick}
-						connectionLineType={ConnectionLineType.SmoothStep}
-						proOptions={{ hideAttribution: false }}
-						fitView
-						maxZoom={3}
-						minZoom={0.01}
-					>
-						<MiniMap zoomable pannable />
-						<Controls />
-						<Background
-							variant={BackgroundVariant.Dots}
-							gap={20}
-							size={1}
-							color="#e0e0e0"
-						/>
-					</ReactFlow>
-				</div>
-				{open && selectedNode && (
-					<div className="node-details">
-						<span className="close" onClick={handleClose}>
-							&times;
-						</span>
-						<div className="node-details-content">
-							<h2>{selectedNode.data.label}</h2>
-							{breadcrumbs.length > 1 && (
-								<div className="breadcrumbs">
-									{breadcrumbs.map((n, i) => (
-										<span key={n.id}>
-											{i > 0 && <span className="breadcrumb-sep">›</span>}
-											<span
-												className={`breadcrumb-item${n.id === selectedNode.id ? " current" : ""}`}
-												onClick={() =>
-													n.id !== selectedNode.id && handleBreadcrumbClick(n)
-												}
-											>
-												{n.data.label}
-											</span>
-										</span>
-									))}
-								</div>
-							)}
-							{selectedNode.url ? (
-								<a
-									href={selectedNode.url}
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									<span className="material-symbols-sharp">open_in_new</span>{" "}
-									{selectedNode.url}
-								</a>
-							) : (
-								<span className="node-path">
-									{selectedNode.data.fullPath || selectedNode.data.label}
-								</span>
-							)}
-							<button onClick={handleHashChange}>Center view</button>
-							<button onClick={toggleChildrenVisibility}>
-								Toggle child pages
-							</button>
-							{selectedNode.url && (
-								<button
-									className={iframeOpen ? "active" : ""}
-									onClick={() => {
-										setIframeUrl(selectedNode.url);
-										setIframeOpen((v) => !v);
-									}}
-								>
-									Preview
-								</button>
-							)}
-						</div>
-					</div>
-				)}
-			</div>
-		<div className={`iframe-pane${iframeOpen ? " is-open" : ""}`}>
-			{displayIframeUrl && (
-				<>
-					<div className="iframe-header">
-						<span className="iframe-url" title={displayIframeUrl}>
-							{displayIframeUrl}
-						</span>
-						<a
-							href={displayIframeUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="iframe-btn"
-						>
-							<span className="material-symbols-sharp">open_in_new</span>
-						</a>
-						<button
-							className="iframe-btn"
-							onClick={() => setIframeOpen(false)}
-						>
-							<span className="close ">&times;</span>
-						</button>
-					</div>
-					<iframe src={displayIframeUrl} title="Page preview" />
-				</>
-			)}
-			</div>
-		</div>
-	);
+    </div>
+  </div>;
 };

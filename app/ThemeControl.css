@@ -1,0 +1,11 @@
+.theme-control { border: 0; margin: 0; padding: 0; min-width: 0; }
+.theme-control legend { font-size: 12px; margin-bottom: 7px; color: var(--explorer-muted); }
+.theme-segments { display: flex; gap: 3px; background: var(--explorer-bg); border-radius: 7px; padding: 3px; }
+.theme-segments button { flex: 1; padding: 8px 10px; border: 1px solid transparent; background: transparent; border-radius: 5px; font-size: 12px; font-weight: 400; }
+.theme-segments button:hover { background: var(--explorer-soft); }
+.theme-segments button[aria-pressed='true'] { background: var(--explorer-card); border-color: var(--explorer-border); }
+.theme-segments button:focus-visible { outline: 2px solid var(--explorer-accent); outline-offset: 2px; }
+.landing-toolbar { display: flex; justify-content: flex-end; width: 100%; max-width: 1080px; margin: 0 auto; }
+.landing-toolbar .theme-control { display: flex; align-items: center; gap: 9px; }
+.landing-toolbar .theme-control legend { float: left; margin: 0; align-self: center; }
+.landing-toolbar .theme-segments { border: 1px solid var(--explorer-border); }

@@ -1,0 +1,79 @@
+{
+  "capturedAt": "2026-10-08T21:08:10.076Z",
+  "collected": 5,
+  "expected": 5,
+  "images": [
+    {
+      "alt": "Pin",
+      "height": 474,
+      "key": "30d90460915a34f7e9b1ce206e4a7606",
+      "loaded": true,
+      "pinUrl": null,
+      "src": "https://i.pinimg.com/474x/30/d9/04/30d90460915a34f7e9b1ce206e4a7606.jpg",
+      "width": 237
+    },
+    {
+      "alt": "Pin",
+      "height": 474,
+      "key": "e78accfa07efdf782ca2f935c084f3cc",
+      "loaded": true,
+      "pinUrl": null,
+      "src": "https://i.pinimg.com/474x/e7/8a/cc/e78accfa07efdf782ca2f935c084f3cc.jpg",
+      "width": 237
+    },
+    {
+      "alt": "Pin",
+      "height": 421,
+      "key": "0e4c1d4d287f76e8e80f9251bebc8b03",
+      "loaded": true,
+      "pinUrl": null,
+      "src": "https://i.pinimg.com/474x/0e/4c/1d/0e4c1d4d287f76e8e80f9251bebc8b03.jpg",
+      "width": 237
+    },
+    {
+      "alt": "Pin",
+      "height": 474,
+      "key": "d41e236037742a012c4e13f96eece599",
+      "loaded": true,
+      "pinUrl": null,
+      "src": "https://i.pinimg.com/474x/d4/1e/23/d41e236037742a012c4e13f96eece599.jpg",
+      "width": 237
+    },
+    {
+      "alt": "Pin",
+      "height": 474,
+      "key": "6e58d4eef8760e5bed3b93427a700f92",
+      "loaded": true,
+      "pinUrl": null,
+      "src": "https://i.pinimg.com/474x/6e/58/d4/6e58d4eef8760e5bed3b93427a700f92.jpg",
+      "width": 237
+    }
+  ],
+  "removedModal": true,
+  "removedStyles": 1,
+  "status": "complete",
+  "steps": 1,
+  "url": "https://fi.pinterest.com/laurisuoper/circuitry/",
+  "downloads": [
+    {
+      "key": "30d90460915a34f7e9b1ce206e4a7606",
+      "error": "Error: Error: Playwright selector deadline exceeded\nlocator.downloadMedia failed for selector img[src=\"https://i.pinimg.com/474x/30/d9/04/30d90460915a34f7e9b1ce206e4a7606.jpg\"]\nLoc"
+    },
+    {
+      "key": "e78accfa07efdf782ca2f935c084f3cc",
+      "error": "Error: Error: Playwright selector deadline exceeded\nlocator.downloadMedia failed for selector img[src=\"https://i.pinimg.com/474x/e7/8a/cc/e78accfa07efdf782ca2f935c084f3cc.jpg\"]\nLoc"
+    },
+    {
+      "key": "0e4c1d4d287f76e8e80f9251bebc8b03",
+      "error": "Error: Error: Playwright selector deadline exceeded\nlocator.downloadMedia failed for selector img[src=\"https://i.pinimg.com/474x/0e/4c/1d/0e4c1d4d287f76e8e80f9251bebc8b03.jpg\"]\nLoc"
+    },
+    {
+      "key": "d41e236037742a012c4e13f96eece599",
+      "error": "Error: Error: Playwright selector deadline exceeded\nlocator.downloadMedia failed for selector img[src=\"https://i.pinimg.com/474x/d4/1e/23/d41e236037742a012c4e13f96eece599.jpg\"]\nLoc"
+    },
+    {
+      "key": "6e58d4eef8760e5bed3b93427a700f92",
+      "error": "Error: Error: Playwright selector deadline exceeded\nlocator.downloadMedia failed for selector img[src=\"https://i.pinimg.com/474x/6e/58/d4/6e58d4eef8760e5bed3b93427a700f92.jpg\"]\nLoc"
+    }
+  ]
+}

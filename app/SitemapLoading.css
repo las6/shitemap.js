@@ -1,0 +1,5 @@
+.sitemap-loading { min-height: 100dvh; width: 100%; display: flex; align-items: center; justify-content: center; position: relative; padding: 32px; text-align: center; background: var(--explorer-bg); color: var(--explorer-text); }
+.sitemap-loading-message { font: 600 clamp(24px, 3vw, 32px)/1.4 var(--root-font); }
+.sitemap-loading-cancel { position: absolute; bottom: 40px; border: 0; background: transparent; padding: 12px; color: var(--explorer-muted); font: 400 13px var(--node-font); cursor: pointer; }
+.sitemap-loading-cancel:hover { color: var(--explorer-text); }
+.sitemap-loading-cancel:focus-visible { outline: 2px solid var(--explorer-accent); outline-offset: 3px; }

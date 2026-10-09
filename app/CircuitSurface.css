@@ -1,0 +1,51 @@
+.circuit-surface {
+  --reflection-x: 0%;
+  --reflection-y: 0%;
+  --circuit-tilt: 0deg;
+  --circuit-turn: 0deg;
+  --finish-light: rgb(255 255 255 / .92);
+  --finish-mid: rgb(224 226 215 / .55);
+  --finish-dark: rgb(167 177 160 / .32);
+  --finish-spread: 1;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+  /* The unlit region drifts too, allowing more of the finish to reveal itself. */
+  mask-image: radial-gradient(ellipse 48% 34% at calc(50% - var(--reflection-x) * .3) calc(51% - var(--reflection-y) * .3), transparent 0% 38%, #000 100%);
+}
+
+.circuit-surface-finish {
+  /* Width of one original image. The seamless tile contains four reflections. */
+  --circuit-pattern-size: clamp(200px, 20vw, 300px);
+  position: absolute;
+  inset: -12%;
+  transform: rotateX(var(--circuit-tilt)) rotateZ(var(--circuit-turn));
+  mask: url('/textures/circuitry-original-mask.svg?v=5') center / calc(var(--circuit-pattern-size) * 2) auto repeat;
+  /* Overlapping anisotropic reflections, with darker breaks between them.
+     The original raster is tiled for this comparison; the finish stays flat. */
+  background:
+    radial-gradient(ellipse calc(22% * var(--finish-spread)) calc(53% * var(--finish-spread)) at calc(17% + var(--reflection-x)) calc(26% + var(--reflection-y)), var(--finish-light) 0%, transparent 65%),
+    radial-gradient(ellipse calc(36% * var(--finish-spread)) calc(14% * var(--finish-spread)) at calc(48% - var(--reflection-x)) calc(16% + var(--reflection-y)), var(--finish-dark) 0%, transparent 74%),
+    radial-gradient(ellipse calc(16% * var(--finish-spread)) calc(32% * var(--finish-spread)) at calc(79% + var(--reflection-x)) calc(62% - var(--reflection-y)), var(--finish-light) 0%, transparent 72%),
+    radial-gradient(ellipse calc(30% * var(--finish-spread)) calc(17% * var(--finish-spread)) at calc(52% - var(--reflection-x)) calc(86% - var(--reflection-y)), var(--finish-dark) 0%, transparent 78%),
+    radial-gradient(ellipse calc(28% * var(--finish-spread)) calc(26% * var(--finish-spread)) at calc(90% - var(--reflection-x) * .5) calc(8% + var(--reflection-y) * .5), var(--finish-mid) 0%, transparent 76%);
+}
+
+
+:root[data-theme='dark'] .circuit-surface {
+    --finish-light: rgb(111 123 106 / .2);
+    --finish-mid: rgb(77 89 72 / .15);
+    --finish-dark: rgb(0 0 0 / .25);
+    --finish-spread: 1.8;
+  }
+
+@media (prefers-color-scheme: dark) {
+:root:not([data-theme='light']) .circuit-surface {
+    --finish-light: rgb(111 123 106 / .2);
+    --finish-mid: rgb(77 89 72 / .15);
+    --finish-dark: rgb(0 0 0 / .25);
+    --finish-spread: 1.8;
+  }
+}

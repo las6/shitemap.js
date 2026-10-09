@@ -50,13 +50,13 @@ export const makeTree = function (sitemap) {
 			.split('/');
 
 		let workingObj = pathSplits;
-		splitUrl.forEach((path) => {
+		splitUrl.forEach((path, pathIndex) => {
 			if (!workingObj[path]) {
 				edgeNode += 1;
 				workingObj[path] = {
 					__self: {
 						id: `en${cyrb53(`edgenode-${edgeNode}`)}`,
-						data: { label: path || referenceUrl.hostname, fullPath: path, subpages: 0 },
+						data: { label: path || referenceUrl.hostname, fullPath: `/${splitUrl.slice(1, pathIndex + 1).join('/')}`, subpages: 0 },
 						position: { x: 0, y: 0 },
 					},
 				};

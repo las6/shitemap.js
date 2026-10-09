@@ -1,4 +1,5 @@
 :root {
+	color-scheme: light;
 	--theme: salmon;
 	--node-root-bg: #1a1a1a;
 	--node-root-color: #fff;
@@ -11,8 +12,21 @@
 	--node-leaf-border: #ddd;
 }
 
+
+:root[data-theme='dark'] {
+		--node-root-bg: #fff;
+		--node-root-color: #000;
+		--node-section-bg: #1a3344;
+		--node-section-color: #c8e4f5;
+		--node-section-border: #2a5572;
+		--node-section-group-bg: #111e2a;
+		--node-leaf-bg: #1a1a1a;
+		--node-leaf-color: #ccc;
+		--node-leaf-border: #333;
+	}
+
 @media (prefers-color-scheme: dark) {
-	:root {
+:root:not([data-theme='light']) {
 		--node-root-bg: #fff;
 		--node-root-color: #000;
 		--node-section-bg: #1a3344;
@@ -24,6 +38,7 @@
 		--node-leaf-border: #333;
 	}
 }
+
 
 html,
 body {
@@ -70,69 +85,25 @@ a {
 	box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-	html {
+
+:root[data-theme='dark'] {
 		color-scheme: dark;
 	}
-	body {
+:root[data-theme='dark'] body {
+		color: white;
+		background: black;
+	}
+
+@media (prefers-color-scheme: dark) {
+:root:not([data-theme='light']) {
+		color-scheme: dark;
+	}
+:root:not([data-theme='light']) body {
 		color: white;
 		background: black;
 	}
 }
 
-/* ---------- home page ---------- */
-
-.front-page {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 12px;
-}
-
-form {
-	display: flex;
-	gap: 3px;
-	width: 100%;
-}
-
-form input {
-	padding: 5px 8px;
-	font-family: Courier;
-	font-weight: 600;
-	min-width: 28em;
-}
-
-form > * {
-	flex: 1 1 auto;
-}
-
-form button {
-	font-weight: 600;
-}
-
-.presets {
-	display: flex;
-	gap: 6px;
-	flex-wrap: wrap;
-	justify-content: center;
-}
-
-.preset-btn {
-	font-family: var(--font-inter), sans-serif !important;
-	font-size: 0.8rem;
-	padding: 4px 10px;
-	background: transparent;
-	border: 1px solid #aaa;
-	border-radius: 20px;
-	cursor: pointer;
-	color: inherit;
-	opacity: 0.7;
-	transition: opacity 0.15s;
-}
-
-.preset-btn:hover {
-	opacity: 1;
-}
 
 /* ---------- flow canvas ---------- */
 
@@ -440,3 +411,8 @@ form button {
 	text-overflow: ellipsis;
 	cursor: default;
 }
+
+/* A single wordmark treatment shared by the landing and canvas signature. */
+.wordmark { white-space: nowrap; }
+.wordmark-aside { opacity: .55; }
+.wordmark-suffix { opacity: .6; }
