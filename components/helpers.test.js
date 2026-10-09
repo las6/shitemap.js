@@ -59,6 +59,12 @@ const fakeSitemap = {
 };
 
 describe('makeTree', () => {
+  it('treats prototype and metadata-like path segments as ordinary pages', () => {
+    const result = makeInitialData({ sites: ['https://example.com/', 'https://example.com/__proto__/constructor', 'https://example.com/__self/child'] });
+    expect(result.initialNodes.filter(node => node.url)).toHaveLength(3);
+    expect(result.initialNodes.some(node => node.data.label === '__self')).toBe(true);
+    expect({}.data).toBeUndefined();
+  });
 	it('returns an object', () => {
 		expect(typeof makeTree(fakeSitemap)).toBe('object');
 	});

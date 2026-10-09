@@ -1,6 +1,8 @@
+import { SITEMAP_LIMITS } from './sitemapLimits';
+
 export function normalizeSiteInput(value) {
   const input = typeof value === 'string' ? value.trim() : '';
-  if (!input || /\s/.test(input)) throw new Error('Enter a domain or website URL, like example.com.');
+  if (!input || input.length > SITEMAP_LIMITS.urlLength || /\s/.test(input)) throw new Error('Enter a domain or website URL of at most 2048 characters, like example.com.');
   let url;
   try {
     url = new URL(input.startsWith('//') ? `https:${input}` : /^[a-z][a-z\d+.-]*:/i.test(input) ? input : `https://${input}`);

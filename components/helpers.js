@@ -1,3 +1,5 @@
+import { assertGraphBudget, graphSegments } from './sitemapLimits';
+
 // Estimate pixel width of a label string at a small UI font size.
 export function estimateLabelWidth(label) {
 	if (!label) return 90;
@@ -22,12 +24,13 @@ export const cyrb53 = (str, seed = 0) => {
 };
 
 export const makeTree = function (sitemap) {
+	assertGraphBudget(sitemap.sites);
 	// Derive base path from actual page URLs, not the sitemap XML URL itself
 	// (they can differ, e.g. sitemap served from localhost but pages on the real domain)
 	const firstSite = sitemap.sites?.[0];
 	const referenceUrl = new URL(firstSite || sitemap.url);
 	const siteBasePath = `${referenceUrl.protocol}//${referenceUrl.hostname}`;
-	const pathSplits = {};
+	const pathSplits = Object.create(null);
 	var edgeNode = 0;
 
 	sitemap.sites.forEach((item) => {
@@ -44,24 +47,23 @@ export const makeTree = function (sitemap) {
 			position: { x: 0, y: 0 },
 		};
 
-		const splitUrl = item
-			.replace(siteBasePath, '')
-			.replace(/\/$/, '')
-			.split('/');
+		const splitUrl = graphSegments(item, firstSite || sitemap.url);
 
 		let workingObj = pathSplits;
 		splitUrl.forEach((path, pathIndex) => {
-			if (!workingObj[path]) {
+			// Path segments are untrusted keys, including __proto__ and __self.
+			const key = path === '__self' ? '\u0000__self' : path;
+			if (!workingObj[key]) {
 				edgeNode += 1;
-				workingObj[path] = {
+				workingObj[key] = Object.assign(Object.create(null), {
 					__self: {
 						id: `en${cyrb53(`edgenode-${edgeNode}`)}`,
 						data: { label: path || referenceUrl.hostname, fullPath: `/${splitUrl.slice(1, pathIndex + 1).join('/')}`, subpages: 0 },
 						position: { x: 0, y: 0 },
 					},
-				};
+				});
 			}
-			workingObj = workingObj[path];
+			workingObj = workingObj[key];
 		});
 
 		workingObj['__self'] = node;
