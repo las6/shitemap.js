@@ -48,7 +48,7 @@ Discovery and sitemap loading use a fullscreen bitmap-font status view, with can
 - Search opens from its icon or Cmd/Ctrl+K; arrow keys and Enter navigate results. Map settings hold view, direction and detail; Appearance holds theme and background controls. Zoom stays in the lower-right corner.
 - Presentation hides all chrome, including the wordmark. Escape exits; the lower-right exit button also appears on hover or keyboard focus.
 - Text uses Recursive; bitmap wordmarks and anchor lettering use Doto. Inter is no longer loaded.
-- Current appearance work adds stored texture, visibility, reflection contrast, and isometric settings, with optional map backgrounds. Fuchsia diagnostics and their rendering effect are development-only, including when a saved debug preference exists. This work is currently uncommitted and should be reviewed before release.
+- Appearance settings store texture, visibility, reflection contrast, and isometric choices, with optional map backgrounds. Fuchsia diagnostics and their rendering effect are development-only, including when a saved debug preference exists. Production appearance verification remains part of the release checks.
 
 Background choices are shared between the landing page and map and saved locally. Appearance offers grain and circuitry, visibility and reflection contrast, and isometric circuitry. Map backgrounds are opt-in. Fuchsia pattern inspection is available in development. Reflections follow the pointer with broad lighting fields and respect reduced motion.
 

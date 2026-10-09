@@ -11,8 +11,8 @@ Status: `[x]` implemented, `[-]` partial/pending verification, `[ ]` planned. So
 - [x] Regular/Bare deterministic tree views, independent direction/detail, collections, stable collapse, search, branch focus, page details, and presentation.
 - [x] Shareable view/direction/detail parameters and selected-page hash. Links reload source data; they are not persisted snapshots of every expanded branch.
 - [x] Recursive/Doto typography, system/light/dark themes, favicons, author link, and subtle package-version labels.
-- [-] Current uncommitted appearance work adds textures, visibility, reflection contrast, isometric treatment, and optional map backgrounds. Review before release. Fuchsia controls/effects are development-only, including persisted debug preferences.
-- [x] Latest observed review checks: 82 tests, lint, and production build passed. Re-run after remaining appearance work; this is a dated observation, not a permanent test count.
+- [x] Appearance controls are committed in `6cfd8e8`: textures, visibility, reflection contrast, isometric treatment, and optional map backgrounds. Fuchsia controls/effects are development-only, including persisted debug preferences. Production appearance verification is pending.
+- [x] During this review, 82 tests, lint, and production build passed before the final appearance commit. Re-run for the final release; this is a dated observation, not a permanent test count.
 - [ ] Protected destinations, aggregate resource budgets, public API quotas, usage instrumentation, exports, and page metadata integration.
 - [ ] Deployed discovery/reload/error-path verification for the hardened release.
 
