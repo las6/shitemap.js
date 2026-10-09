@@ -416,3 +416,4 @@ a {
 .wordmark { white-space: nowrap; }
 .wordmark-aside { opacity: .55; }
 .wordmark-suffix { opacity: .6; }
+.wordmark-version { display: inline-block; margin-left: 8px; font: 400 10px/1.2 var(--font-inter), sans-serif; letter-spacing: 0; vertical-align: baseline; }
