@@ -1,3 +1,4 @@
+import { textLines } from './exportText';
 import { writePngClipboard } from './clipboardImage';
 
 // Export a measured map as native SVG geometry/text or bounded canvas PNG.
@@ -13,24 +14,6 @@ export function exportSize(bounds, format) {
 }
 export function exportFilename(site, format) {
   return `${new URL(site).hostname.replace(/[^a-z\d.-]/gi, '_')}-sitemap.${format}`;
-}
-
-function textLines(element, position) {
-  const style = getComputedStyle(element), range = document.createRange();
-  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-  const lines = [];
-  while (walker.nextNode()) {
-    const node = walker.currentNode;
-    for (let i = 0; i < node.length; i++) {
-      range.setStart(node, i); range.setEnd(node, i + 1);
-      const rect = range.getBoundingClientRect();
-      if (!rect.width && !rect.height) continue;
-      const point = position(rect), previous = lines[lines.length - 1];
-      if (previous && Math.abs(previous.y - point.y) < 1) { previous.text += node.data[i]; previous.width = point.x + point.width - previous.x; }
-      else lines.push({ ...point, text: node.data[i], family: style.fontFamily, size: parseFloat(style.fontSize), weight: style.fontWeight, color: style.color });
-    }
-  }
-  return lines;
 }
 
 export function measureMap(root) {
@@ -132,13 +115,20 @@ async function mapPng(map, background) {
 }
 
 async function renderMap(root, { format, background }) {
+  const started = performance.now();
   await document.fonts.ready;
   // Let font/branch measurement and React Flow handle updates settle first.
   await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  const ready = performance.now();
   // Read geometry synchronously: subsequent async font work cannot change this snapshot.
   const map = measureMap(root);
+  const measured = performance.now();
   const blob = format === 'svg' ? new Blob([mapSvg(map, background, await embeddedFonts(new Set(map.texts.map(text => text.family))))], { type: 'image/svg+xml' }) : await mapPng(map, background);
   const size = exportSize(map.bounds, format);
+  if (process.env.NODE_ENV === 'development') console.debug('Map export timing', JSON.stringify({
+    format, readyMs: ready - started, measurementMs: measured - ready,
+    renderAndEncodeMs: performance.now() - measured,
+  }));
   return { blob, width: format === 'png' ? size.pixelWidth : size.width, height: format === 'png' ? size.pixelHeight : size.height, reduced: size.scale < 1 };
 }
 
@@ -150,6 +140,19 @@ export async function downloadMap(root, site, options) {
   return size;
 }
 
-export function copyMap(root, { background }) {
-  return writePngClipboard(() => renderMap(root, { format: 'png', background }));
+export async function copyMap(root, { background }) {
+  const started = performance.now();
+  let prepared;
+  try {
+    return await writePngClipboard(async () => {
+      const result = await renderMap(root, { format: 'png', background });
+      prepared = performance.now();
+      return result;
+    });
+  } finally {
+    if (process.env.NODE_ENV === 'development') console.debug('Map clipboard timing', JSON.stringify({
+      totalMs: performance.now() - started,
+      afterPreparationMs: prepared === undefined ? null : performance.now() - prepared,
+    }));
+  }
 }
