@@ -1,0 +1,28 @@
+{
+  "name": "Shitemap API quota",
+  "active": true,
+  "description": "Shared discovery and sitemap execution allowance; SDK supplies the client-IP counting key.",
+  "conditionGroup": [
+    {
+      "conditions": [
+        {
+          "type": "rate_limit_api_id",
+          "op": "eq",
+          "value": "shitemap-api"
+        }
+      ]
+    }
+  ],
+  "action": {
+    "mitigate": {
+      "action": "rate_limit",
+      "rateLimit": {
+        "algo": "fixed_window",
+        "limit": 20,
+        "window": 60,
+        "keys": [],
+        "action": "rate_limit"
+      }
+    }
+  }
+}

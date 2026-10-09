@@ -4,7 +4,7 @@ Visual sitemap explorer by [las6](https://las6.net). Enter a domain, website URL
 
 ## Status and next steps
 
-As of October 9, 2026, the app is version 0.3.1. Domain discovery, bounded sitemap loading, Regular/Bare exploration, search, page details, presentation, and shareable view settings are implemented. Sitemap fetching now pins connections to validated public addresses and enforces operation-wide budgets. Both APIs have a fail-closed Vercel quota guard; the live Firewall rule and production behavior still require configuration/verification. Passing local checks does not establish production readiness. See [hardening and deployment](docs/HARDENING.md).
+As of October 9, 2026, the app is version 0.3.1. Domain discovery, bounded sitemap loading, Regular/Bare exploration, search, page details, presentation, and shareable view settings are implemented. Sitemap fetching now pins connections to validated public addresses and enforces operation-wide budgets. Both APIs have a fail-closed Vercel quota guard; the rule is published and shared throttling, discovery, public XML, and blocked destinations were verified on the deployed release. Browser capacity and hosting load checks remain. See [hardening and deployment](docs/HARDENING.md).
 
 See [PLAN.md](PLAN.md) for implementation status, release gates, and the sequence: hardening and basic operational measurement → deployed verification → PNG/SVG export → selected-page metadata. [Kurkelo API handoff](docs/KURKELO_HANDOFF.md) records the separate service requirements. [Usage and operations](docs/OPERATIONS.md) proposes request/usage measurement across Shitemap, Kurkelo, and ADvisor, with Centry for errors. These plans are not implemented integrations.
 

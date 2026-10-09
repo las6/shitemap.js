@@ -14,9 +14,9 @@ Status: `[x]` implemented, `[-]` partial/pending verification, `[ ]` planned. So
 - [x] Appearance controls are committed in `6cfd8e8`: textures, visibility, reflection contrast, isometric treatment, and optional map backgrounds. Fuchsia controls/effects are development-only, including persisted debug preferences. Production appearance verification is pending.
 - [x] During this review, 82 tests, lint, and production build passed before the final appearance commit. Re-run for the final release; this is a dated observation, not a permanent test count.
 - [x] Protected sitemap destinations, aggregate XML/document/page/node budgets, bounded parsing structure, and a global index traversal queue.
-- [-] Shared Vercel quota guard implemented; the deployed Firewall rule and throttling behavior are not yet verified. No in-memory fallback allows unguarded production calls.
+- [x] Shared Vercel quota guard and live `shitemap-api` rule verified: 20 calls/minute per client-IP key per region, shared across APIs. No in-memory fallback allows unguarded production calls.
 - [ ] Usage instrumentation, exports, and page metadata integration.
-- [ ] Deployed discovery/reload/error-path verification for the hardened release.
+- [-] Hosted hardening build, discovery, direct XML, blocked destinations, and shared 429/retry behavior verified. Browser reload/shared-link and capacity verification remain.
 
 ## Service boundary and data flow
 
@@ -32,7 +32,7 @@ Kurkelo discovers locations and collects exact-page HTML metadata; it does not c
 - [x] Protected fetch adapter validates initial/child/redirect URLs and DNS addresses, then pins the connection with TLS verification. The development local fixture is read from its bundled file, without network exceptions.
 - [x] One bounded traversal queue controls concurrency, cycles, nesting, file/page totals, URL length, and inferred graph nodes.
 - [x] Streaming download/decompression limits and XML depth/element bounds precede parsing. Deadline checks surround parsing, but cannot preempt synchronous parser CPU; production measurements determine whether isolation is needed.
-- [-] Both APIs enforce the shared Vercel quota guard, with 503 on unavailable/missing configuration and 429/retry guidance on rejection. Deploy/configure/test the rule. Discovery request and service-response bodies are bounded.
+- [x] Both APIs enforce the published shared Vercel quota rule; live 429/retry guidance verified. Missing/unavailable checks return 503 in local tests. Discovery request and service-response bodies are bounded.
 - [x] Structured errors distinguish blocked destinations, resource limits, timeout, and throttling. Ordinary child failures retain incomplete-map warnings; limit failures return no truncated inventory.
 - [x] Landing/shared-link errors offer child sitemap choices discovered before a limit failure.
 

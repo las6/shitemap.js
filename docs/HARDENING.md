@@ -1,6 +1,6 @@
 # Shitemap release hardening
 
-Implemented source work, October 9, 2026. This is not a deployment or a claim that the public service is fully hardened. Related: [PLAN.md](../PLAN.md), [Kurkelo handoff](KURKELO_HANDOFF.md).
+Implemented and deployed October 9, 2026. This first pass does not establish full service capacity or complete every release gate. Related: [PLAN.md](../PLAN.md), [Kurkelo handoff](KURKELO_HANDOFF.md).
 
 ## Sitemap fetching
 
@@ -28,8 +28,8 @@ The browser handles structured sitemap failures and offers individual child site
 
 The source guard uses `@vercel/firewall` with rate-limit ID `shitemap-api`. It shares the client-IP bucket across discovery and sitemap API executions. It trusts the platform-provided IP only when running on Vercel, uses the deployment's `VERCEL_URL` rather than a caller Host header, forwards only the minimal quota headers, and limits the check to one second. No per-process fallback is used.
 
-1. In the correct Vercel project, configure an `@vercel/firewall` rule with ID **shitemap-api**, Fixed Window, **20 requests / 60 seconds**, default client-IP counting, and blocking/429 action. Treat that threshold as a conservative starting point to measure, not a finalized service capacity.
-2. Confirm project plan/costs and system environment variables. Publish the rule only under the user's deployment authorization; this source work has not provisioned/published any rule or changed billing.
+1. In the correct Vercel project, configure an `@vercel/firewall` rule with ID **shitemap-api**, Fixed Window, **20 requests / 60 seconds**, SDK-supplied client-IP counting, and blocking/429 action. The saved rule is [vercel-api-quota.json](vercel-api-quota.json): `keys: []` uses the SDK key without additionally splitting buckets by the server fetch IP. Do not use the CLI default `keys: ["ip"]` for this SDK rule. Treat that threshold as a conservative starting point to measure, not a finalized service capacity.
+2. Confirm project plan/costs and system environment variables. Publish the rule only under the user's deployment authorization; the existing project rule was published with user authorization; no plan or billing settings were changed.
 3. Verify preview automation/deployment protection as documented by Vercel, without weakening production protections. The SDK uses the immutable deployment host; confirm the project's rule applies there as well as the custom domain.
 4. Deploy and verify normal discovery/direct XML, repeated calls across both routes, 429/retry guidance, missing-rule behavior, and unavailable-service behavior. Missing rules and failed checks return 503, so deploying first without setup will disable production API calls.
 5. Vercel's counters are **per region**, not globally authoritative across regions. Native cached API replies can bypass function execution and its SDK check; this guards backend executions. Add/verify a native path-based edge rule if counting every incoming request is required. Service-wide upstream controls in Kurkelo remain separate.
@@ -46,4 +46,14 @@ Meaningful fixtures cover private/mixed DNS, same-host DNS changes on redirect, 
 
 Local smoke checks: bundled 104-page fixture and Vite's public 57-page sitemap loaded; loopback and link-local metadata destinations returned `blocked_destination`; the bundled example opened in the browser and blocked entry showed a clear error without console errors.
 
-Remaining: live rule configuration/deployment verification, actual hosting memory/concurrency and browser capacity tests, visible-node expansion budgeting, and Kurkelo's separate hardening. Operational telemetry and Centry remain planned; request IDs alone are not a usage dashboard.
+Remaining: actual hosting memory/concurrency and browser capacity tests, visible-node expansion budgeting, and unresolved Kurkelo connection-enforcement/metadata coordination work. Operational telemetry and Centry remain planned; request IDs alone are not a usage dashboard.
+
+## Live release evidence — October 9, 2026
+
+Committed source `2ee5858` (including `1d16064` and `cba58c6`) was deployed from an isolated Git archive, excluding concurrent uncommitted appearance work. Deployment: `shitemap-gjgonb18k-dqcomms.vercel.app`, ID `dpl_HKGpuPu5v2svq91HzqVwERQQ378f`; public domain [shitemap.las6.net](https://shitemap.las6.net). The hosted build passed.
+
+Project `dqcomms/shitemap-js` already uses Pro: rate-limit usage is metered under the existing plan, starting at $0.50 per million allowed requests with regional pricing; ordinary hosting usage remains separate. No plan upgrade, billing-setting change, Redis, or Durable Objects were introduced.
+
+The published `shitemap-api` rule allows 20 SDK checks / 60 seconds per client-IP key per region. A sequential five-second test alternating validation-only requests between the two APIs allowed 20, then returned three HTTP 429 responses across both routes with `code: rate_limited` and `Retry-After: 60`. No publisher or Kurkelo work was performed by these validation-only requests. Missing/unavailable quota checks remain covered by local tests rather than deliberately breaking the live rule.
+
+Production-configured smoke checks: discovery returned Vite's XML location using Kurkelo's cache; direct XML returned 57 pages; link-local metadata URLs returned HTTP 422 `blocked_destination`. Kurkelo caller/hostname limits are deployed separately; see [handoff status](KURKELO_HANDOFF.md).

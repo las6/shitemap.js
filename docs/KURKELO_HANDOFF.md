@@ -1,10 +1,18 @@
 # Kurkelo API handoff from Shitemap
 
-Consumer request dated October 9, 2026. Requirements below are proposals to implement in the separate Kurkelo repository, not claims about the deployed API. Related: [delivery plan](../PLAN.md), [operations](OPERATIONS.md).
+Consumer request dated October 9, 2026. Requirements below record the original handoff; the verified service update is recorded separately below and does not imply all requirements are complete. Related: [delivery plan](../PLAN.md), [operations](OPERATIONS.md).
+
+## Service update — October 9, 2026
+
+The user reports deployed Kurkelo native caller/hostname limits of 20 calls/10 seconds and 60/minute, with 38 tests plus local/live throttling checks passing. [Kurkelo LIMITS.md](/Users/lauri/Personal/kurkelo/docs/LIMITS.md) confirms approximate, eventually consistent counters per Cloudflare location; these are not strict global budgets or concurrency reservations. Cache hits consume caller allowance but avoid hostname HTTP-attempt limits.
+
+Existing shared keys remain compatible and share a legacy allowance. Optional server-configured app-specific keys can separate Shitemap/Advisor allowances; none were provisioned here. HTTP caller throttling uses 429/Retry-After, while hostname throttling retains collector blocked/partial semantics. Shitemap preserves service 429/retry guidance and collector status.
+
+Explicit allowlisted local targets work only in Kurkelo development. No Durable Objects or billing changes were introduced. Caller/domain quota and compatible retry work are delivered for this approximate scope. Connection enforcement, cold-miss coordination, failure cooldowns, and full usage measurement remain distinct items unless separately verified.
 
 ## Current integration and ownership
 
-Shitemap 0.3.0 now calls `POST /api/discover` server-side with `{ target, include: ['sitemaps'], detail: 'compact' }`, using `KURKELO_URL` and an optional server-held bearer key. It consumes `site.sitemaps` and `site.status.sitemaps`, offers multiple locations, and then expands XML itself. Older Kurkelo documentation saying Shitemap is not wired should be updated.
+Shitemap 0.3.1 calls `POST /api/discover` server-side with `{ target, include: ['sitemaps'], detail: 'compact' }`, using `KURKELO_URL` and an optional server-held bearer key. It consumes `site.sitemaps` and `site.status.sitemaps`, offers multiple locations, and then expands XML itself. Older Kurkelo documentation saying Shitemap is not wired should be updated.
 
 Kurkelo remains responsible for website discovery, protected external HTML fetching, metadata extraction, identity, and cache/freshness. Shitemap owns XML inventory extraction, graph presentation, browser controls, export, and error presentation. ADvisor currently has its own discovery/profile-ID resolvers; adopting Kurkelo there remains separate work, not an implemented integration.
 
