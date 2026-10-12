@@ -11,6 +11,7 @@ import Wordmark from '../components/Wordmark';
 import { pageFocus } from '../components/pageFocus';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlow, useReactFlow, useStore } from '@xyflow/react';
+import { createMetadataClient } from '../components/metadataClient';
 import '@xyflow/react/dist/style.css';
 import './Explorer.css';
 import './ExplorerTheme.css';
@@ -24,6 +25,8 @@ const selectZoom = state => state.transform[2];
 const mapPadding = { top: '95px', bottom: '100px', left: '40px', right: '40px' };
 
 export const Flow = ({ rawNodes, rawEdges, site, warnings = [] }) => {
+  const metadataClient = useMemo(() => createMetadataClient(), []);
+  useEffect(() => () => metadataClient.dispose(), [metadataClient]);
   const tree = useMemo(() => indexTree(rawNodes, rawEdges), [rawNodes, rawEdges]);
   const [collapsed, setCollapsed] = useState(() => initialCollapsed(tree));
   const [limits, setLimits] = useState(new Map());
@@ -176,6 +179,7 @@ export const Flow = ({ rawNodes, rawEdges, site, warnings = [] }) => {
         </ReactFlow></NodeMeasurementProvider>
       </div>
       {!presentation && selected && <PageDetails page={selected} isRoot={!tree.parent.has(selectedId)} ancestors={ancestors}
+        metadataClient={metadataClient}
         childCount={tree.children.get(selectedId)?.length || 0} collapsed={collapsed.has(selectedId)}
         onClose={() => { setSelectedId(null); history.replaceState(history.state, '', window.location.pathname + window.location.search); }}
         onReveal={reveal} onToggle={toggle} />}
