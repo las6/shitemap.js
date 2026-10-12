@@ -1,7 +1,7 @@
 import { checkRateLimit } from '@vercel/firewall';
 import { SitemapError } from './sitemapLimits';
 
-// One shared bucket for discovery + sitemap loading, not per-process counters.
+// One shared bucket for discovery, sitemap loading and selected-page metadata.
 // No caller-selected host or arbitrary headers reach the Firewall API.
 export async function enforceApiQuota(request, check = checkRateLimit) {
   if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') return;
