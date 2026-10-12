@@ -1,6 +1,6 @@
 # Shitemap delivery plan
 
-Updated October 9, 2026. Source version 0.4.2; the last separately verified live release is 0.4.1. Main pushes trigger the existing Vercel deployment integration. Browser/export evidence is in [VERIFICATION.md](docs/VERIFICATION.md). Supersedes the Groups/Flat/ELK plan; historical exploration remains in [IDEAS.md](IDEAS.md). Implemented hardening and deployment requirements are in [HARDENING.md](docs/HARDENING.md).
+Updated October 12, 2026. Release source version 0.4.3; the last verified hosted version is 0.4.2, with the previous full export smoke review in 0.4.1. Main pushes trigger the existing Vercel deployment integration. Browser/export evidence is in [VERIFICATION.md](docs/VERIFICATION.md). Supersedes the Groups/Flat/ELK plan; historical exploration remains in [IDEAS.md](IDEAS.md). Implemented hardening and deployment requirements are in [HARDENING.md](docs/HARDENING.md).
 
 Status: `[x]` implemented, `[-]` partial/pending verification, `[ ]` planned. Source status is not evidence of production deployment.
 
@@ -16,7 +16,8 @@ Status: `[x]` implemented, `[-]` partial/pending verification, `[ ]` planned. So
 - [x] Protected sitemap destinations, aggregate XML/document/page/node budgets, bounded parsing structure, and a global index traversal queue.
 - [x] Shared Vercel quota guard and live `shitemap-api` rule verified: 20 calls/minute per client-IP key per region, shared across APIs. No in-memory fallback allows unguarded production calls.
 - [x] PNG/native SVG export and image clipboard copying are deployed in 0.4.1; hosted example and actual export/copy smoke checks passed.
-- [ ] Usage instrumentation and page metadata integration.
+- [x] Selected-page metadata implemented for 0.4.3; hosted verification remains.
+- [ ] Usage instrumentation.
 - [-] Hosted hardening build, discovery, direct XML, blocked destinations, and shared 429/retry behavior verified. Hosted shared-link reload/search and local synthetic browser capacity checks completed; cross-browser/device and hosting load checks remain.
 
 ## Practical next steps and scope
@@ -25,7 +26,7 @@ Keep the current single Shitemap allowance of 20 API executions/minute/IP. Separ
 
 A dedicated Shitemap Kurkelo credential is agreed in principle but not provisioned. The current legacy key still works and shares its allowance with other consumers. Arrange that migration with Kurkelo when its key setup is ready.
 
-Focused browser/shared-link and synthetic capacity review plus PNG/SVG export are complete in source; 0.4.1 is deployed; check real devices/hosting capacity. Before selected-page metadata, improve ordinary section expansion and copy/export preparation. Basic operational measurement can grow alongside these; a new analytics platform or Centry integration is not a beta prerequisite.
+Focused browser/shared-link and synthetic capacity review plus PNG/SVG export are complete in source; 0.4.2 is deployed; check real devices/hosting capacity. Ordinary section expansion and copy/export preparation are complete; selected-page metadata is included in 0.4.3. Basic operational measurement can grow alongside these; a new analytics platform or Centry integration is not a beta prerequisite.
 
 ## Service boundary and data flow
 
@@ -105,18 +106,23 @@ Acceptance: output matches the chosen structure, has no clipped labels/chrome, a
 - [x] Local source: replace per-character export reads with whole-line reads and binary searches for wrapped boundaries. Benchmark Pretext 0.0.9; retain native measurement for browser wrapping fidelity. Development-only phase timings separate readiness, measurement, encoding and clipboard completion. See [EXPORT_PERFORMANCE.md](docs/EXPORT_PERFORMANCE.md); no eager rendering, PNG cache or extra quality controls added.
 - [x] Tests cover 20/30/50-child sections, the 51-child boundary, larger remainder counts and nested collapse in Regular/Bare and both directions. Local browser confirms a 17-page collection opens fully in one click; image copy and SVG download succeed. Broader device checks remain.
 - [x] Source bumped to 0.4.2 for the main push, including seamless circuitry and consistent isometric defaults. Deployment uses Vercel Git integration.
-- [ ] Smoke-check the automatic hosted release.
+- [x] Confirm remote main at `65518fa` and public site version 0.4.2 after the automatic deployment. Full hosted export checks remain the 0.4.1 evidence.
 
 Next: selected-page metadata, then coherent keyboard tree navigation with safe-zone camera following, then a canvas-scoped copy shortcut. Favicon exploration is independent polish. Whole-branch recursive expansion remains deferred.
 
-## 6. Selected-page metadata — after expansion/copy improvements
+## 6. Selected-page metadata — release 0.4.3, hosted verification pending
 
-- [ ] Add a server proxy calling Kurkelo with `include: ['metadata']`, `detail: 'compact'`; never expose the bearer key.
-- [ ] Request only a selected real page, debounce changes, deduplicate work, and reuse results. Opening a graph makes zero page-metadata requests.
-- [ ] Show observed title/description/optional image and status/date in the details panel. Missing OG values and client-rendered-only tags are normal unavailable states.
-- [ ] Preserve URL-derived labels, source URL identity, and geometry initially. Inferred folders have no fetchable page.
-- [ ] Retain existing details on failure; validate links/images and provide image fallbacks. Image proxying must not introduce an unprotected fetch path.
-- [ ] Keep the single API allowance initially; tune only after measuring selected-page usage and throttling. No automatic prefetch or bulk enrichment is planned.
+- [x] Add a server proxy calling Kurkelo with `include: ['metadata']`, `detail: 'compact'`; never expose the bearer key.
+- [x] Request only a selected real page, debounce changes, deduplicate work, and reuse results. Opening a graph makes zero page-metadata requests.
+- [x] Show observed title/description/optional image and status/date in the details panel. Missing OG values and client-rendered-only tags are normal unavailable states.
+- [x] Preserve URL-derived labels, source URL identity, and geometry initially. Inferred folders have no fetchable page.
+- [x] Retain existing details on failure; validate links/images and provide image fallbacks. Image proxying must not introduce an unprotected fetch path.
+- [x] Keep the single API allowance initially; tune only after measuring selected-page usage and throttling. No automatic prefetch or bulk enrichment is planned.
+
+- [x] Verify real Vite and Next.js metadata through the local Shitemap proxy against deployed Kurkelo using the existing consumer configuration.
+- [ ] Hosted Shitemap proxy verification remains. User requested the 0.4.3 push without repeating tests or smoke checks. Initial skeleton browser checks used controlled HTML with the real Kurkelo parser/response handler.
+
+See [METADATA.md](docs/METADATA.md) for bounds, reuse, image behavior, and remaining checks. No additional Kurkelo API is needed for this slice.
 
 ## Deferred
 

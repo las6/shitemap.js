@@ -1,6 +1,6 @@
 # Release verification — October 9, 2026
 
-Last separately verified live release: **0.4.1** at [shitemap.las6.net](https://shitemap.las6.net), with the deployed hardening and quota evidence in [HARDENING.md](HARDENING.md). PNG/SVG export and image clipboard copying are deployed. Concurrent uncommitted appearance/connector work remains separate.
+Last verified hosted version: **0.4.2** at [shitemap.las6.net](https://shitemap.las6.net), with the deployed hardening and quota evidence in [HARDENING.md](HARDENING.md). PNG/SVG export and image clipboard copying are deployed. Appearance and expansion/export improvements are committed and pushed on main. The full hosted export smoke review below remains the 0.4.1 evidence.
 
 ## Completed checks
 
@@ -34,7 +34,7 @@ PNG starts at 2× resolution, reduces the whole image when necessary, and caps e
 - Hosting memory/concurrency measurements and extreme interactive expansion; no service-wide capacity guarantee is asserted.
 - Full browser partial-index/retry cases remain broader coverage work; server/API tests already cover bounded traversal, partial warnings, candidates, and errors.
 
-Implemented locally, pending release: 50-child expansion batches and faster native export text measurement. Isolated tests/lint/build and local browser checks are recorded in [EXPORT_PERFORMANCE.md](EXPORT_PERFORMANCE.md). Selected-page metadata from Kurkelo follows those improvements. Keep the current single API allowance initially and arrange a dedicated Shitemap credential when Kurkelo provisioning is ready; no additional quota-policy layer is planned.
+Released in 0.4.2: 50-child expansion batches and faster native export text measurement. Isolated tests/lint/build and local browser checks are recorded in [EXPORT_PERFORMANCE.md](EXPORT_PERFORMANCE.md). Selected-page metadata from Kurkelo is included in source release 0.4.3; see [METADATA.md](METADATA.md) for verification and remaining live checks. Keep the current single API allowance initially and arrange a dedicated Shitemap credential when Kurkelo provisioning is ready; no additional quota-policy layer is planned.
 
 ## 0.4.1 deployment evidence
 
@@ -44,4 +44,12 @@ Hosted smoke checks: version 0.4.1 visible; protected fetching loaded the deploy
 
 ## 0.4.2 Git-triggered release
 
-Source 0.4.2 includes 50-child expansion, faster native export text measurement, seamless reflected circuitry assets, and consistent isometric defaults with a development-only scale control. The complete working tree passed 148 tests, lint, and a production Turbopack build. Main pushes use the existing Vercel Git integration; no separate CLI deployment is required. Hosted 0.4.2 smoke verification remains pending. See [EXPORT_PERFORMANCE.md](EXPORT_PERFORMANCE.md) for export evidence and future Pretext consideration.
+Source 0.4.2 includes 50-child expansion, faster native export text measurement, seamless reflected circuitry assets, and consistent isometric defaults with a development-only scale control. The complete working tree passed 148 tests, lint, and a production Turbopack build. Main pushes use the existing Vercel Git integration; no separate CLI deployment is required. Remote main was verified at `65518fa04e89edd0343a2b51b9124cd33d2c4d86`; the public homepage returned version 0.4.2 after the Git-triggered deployment. No separate CLI deployment was performed. Full hosted export checks were not repeated. See [EXPORT_PERFORMANCE.md](EXPORT_PERFORMANCE.md) for export evidence and future Pretext consideration.
+
+## Selected-page metadata — release 0.4.3
+
+The metadata proxy, bounded map-local request reuse and details preview pass 171 tests, lint and production Turbopack build. Browser checks cover successful controlled HTML through Kurkelo’s real parser/handler, inferred folders, repeat-page cache reuse and broken-image fallback. The initial image check used opt-in loading; current source automatically hotlinks images. Temporary fixture routes were removed before build. Real Vite and Next.js metadata now pass through the local Shitemap proxy against deployed Kurkelo after correcting local service configuration. An isolated browser preview confirms Vite’s actual title, description and image. Hosted Shitemap proxy verification remains pending as described in [METADATA.md](METADATA.md).
+
+## October 12 release submission
+
+Version 0.4.3 contains the metadata proxy and request reuse, compact image-first inspector with automatic browser hotlinking, preview links opening the page, removal of the branch-focus hint, and the explicit loopback development origin. The readiness review passed 171 tests, lint and production build and confirmed existing production discovery. The user then requested the version bump, logical commits and main push while skipping further testing. No release-time test/build rerun or hosted smoke check is performed; Vercel builds through the existing Git integration. Deployment completion and hosted metadata behavior are not asserted here.

@@ -12,7 +12,7 @@ Explicit allowlisted local targets work only in Kurkelo development. No Durable 
 
 ## Current integration and ownership
 
-Shitemap 0.3.1 calls `POST /api/discover` server-side with `{ target, include: ['sitemaps'], detail: 'compact' }`, using `KURKELO_URL` and an optional server-held bearer key. It consumes `site.sitemaps` and `site.status.sitemaps`, offers multiple locations, and then expands XML itself. Older Kurkelo documentation saying Shitemap is not wired should be updated.
+Deployed Shitemap 0.4.2 calls `POST /api/discover` server-side with `{ target, include: ['sitemaps'], detail: 'compact' }`, using `KURKELO_URL` and an optional server-held bearer key. It consumes `site.sitemaps` and `site.status.sitemaps`, offers multiple locations, and then expands XML itself. Older Kurkelo documentation saying Shitemap is not wired should be updated.
 
 Kurkelo remains responsible for website discovery, protected external HTML fetching, metadata extraction, identity, and cache/freshness. Shitemap owns XML inventory extraction, graph presentation, browser controls, export, and error presentation. ADvisor currently has its own discovery/profile-ID resolvers; adopting Kurkelo there remains separate work, not an implemented integration.
 
@@ -22,7 +22,7 @@ Existing exact-page support is sufficient for the first unfurling feature:
 { "target": "https://example.com/a-page", "include": ["metadata"], "detail": "compact" }
 ```
 
-Shitemap will fetch only selected real pages. No automatic whole-map unfurling, batch/jobs endpoint, browser rendering, screenshots, or new inventory API is requested now.
+Shitemap release 0.4.3 requests only selected real pages through `/api/metadata`, with a 350 ms selection debounce, shared in-flight work, a bounded five-minute map-local cache, and retry cooldowns. It consumes `page` from the existing compact response and keeps the bearer key server-side. Images are automatically hotlinked in the browser; there is no server image proxy. Hosted verification is pending; see [METADATA.md](METADATA.md). No Kurkelo API changes are required for this first slice. No automatic whole-map unfurling, batch/jobs endpoint, browser rendering, screenshots, or new inventory API is requested now.
 
 ## Original service targets and remaining review
 
